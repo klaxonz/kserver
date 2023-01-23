@@ -17,6 +17,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         AccountVo account = (AccountVo)request.getSession().getAttribute(AccountConstant.SESSION_NAME);
         if (Objects.isNull(account)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied");
             return false;
         } else {
             OnlineUser onlineUser = new OnlineUser(account.getId(), account.getUsername());

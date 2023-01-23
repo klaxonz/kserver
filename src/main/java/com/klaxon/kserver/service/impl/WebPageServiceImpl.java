@@ -49,11 +49,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 @Service("webPageService")
 @Slf4j
 public class WebPageServiceImpl implements IWebPageService {
+
+    private static final String DEFAULT_FILE_STORE_DIRECTORY = "/Users/kail/Downloads";
+
     @Autowired
     private TagMapper tagMapper;
     @Autowired
@@ -62,6 +67,8 @@ public class WebPageServiceImpl implements IWebPageService {
     private WebPageMapper webPageMapper;
     @Autowired
     private WebPageTagMapper webPageTagMapper;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     @Override
     public void add(WebPageDto webPageDto) {
@@ -100,8 +107,9 @@ public class WebPageServiceImpl implements IWebPageService {
 
         // 视频解析
         if (urlBuilder.getHost().equals("www.youtube.com")) {
-            downloadVideo(urlBuilder);
-
+            executorService.submit(() -> {
+                downloadVideo(urlBuilder);
+            });
         }
 
         WebPage webPage = new WebPage();
@@ -119,13 +127,10 @@ public class WebPageServiceImpl implements IWebPageService {
     private void downloadVideo(UrlBuilder urlBuilder) {
         // init downloader with default config
         YoutubeDownloader downloader = new YoutubeDownloader();
-        // or configure after init
         Config config = downloader.getConfig();
         config.setMaxRetries(0);
 
         String videoId = urlBuilder.getQueryStr().split("=")[1];
-
-
         // async parsing
         RequestVideoInfo request = new RequestVideoInfo(videoId)
                 .callback(new YoutubeCallback<VideoInfo>() {
@@ -141,56 +146,12 @@ public class WebPageServiceImpl implements IWebPageService {
                 })
                 .async();
         Response<VideoInfo> response = downloader.getVideoInfo(request);
-        VideoInfo video = response.data(); // will block thread
-
-        // video details
-        VideoDetails details = video.details();
-        System.out.println(details.title());
-        System.out.println(details.viewCount());
-        details.thumbnails().forEach(image -> System.out.println("Thumbnail: " + image));
-
-        // HLS url only for live videos and streams
-        if (video.details().isLive()) {
-            System.out.println("Live Stream HLS URL: " + video.details().liveUrl());
-        }
-
-        // get videos formats only with audio
-        List<VideoWithAudioFormat> videoWithAudioFormats = video.videoWithAudioFormats();
-        videoWithAudioFormats.forEach(it -> {
-            System.out.println(it.audioQuality() + ", " + it.videoQuality() + " : " + it.url());
-        });
-
-        // get all videos formats (may contain better quality but without audio)
-        List<VideoFormat> videoFormats = video.videoFormats();
-        videoFormats.forEach(it -> {
-            System.out.println(it.videoQuality() + " : " + it.url());
-        });
-
-        // get audio formats
-        List<AudioFormat> audioFormats = video.audioFormats();
-        audioFormats.forEach(it -> {
-            System.out.println(it.audioQuality() + " : " + it.url());
-        });
+        VideoInfo video = response.data();
 
         // get best format
         video.bestVideoWithAudioFormat();
-        video.bestVideoFormat();
         video.bestAudioFormat();
-
-        // filtering formats
-        List<Format> formats = video.findFormats(new Filter<Format>() {
-            @Override
-            public boolean test(Format format) {
-                return format.extension() == Extension.WEBM;
-            }
-        });
-
-        // itags can be found here - https://gist.github.com/sidneys/7095afe4da4ae58694d128b1034e01e2
-        Format formatByItag = video.findFormatByItag(18); // return null if not found
-        if (formatByItag != null) {
-            System.out.println(formatByItag.url());
-        }
-        Format format = videoFormats.get(0);
+        Format format = video.bestVideoFormat();
 
         // async downloading with callback
         RequestVideoFileDownload downloadRequest = new RequestVideoFileDownload(format)
@@ -210,11 +171,10 @@ public class WebPageServiceImpl implements IWebPageService {
                         System.out.println("Error: " + throwable.getLocalizedMessage());
                     }
                 })
-                .saveTo(new File("/Users/kail/Downloads"))
+                .saveTo(new File(DEFAULT_FILE_STORE_DIRECTORY))
                 .async();
         Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
         File data = downloadResponse.data(); // will block current thread
-        System.out.println(data);
     }
 
     @Override
