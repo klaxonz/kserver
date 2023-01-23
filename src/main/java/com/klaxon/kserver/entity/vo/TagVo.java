@@ -5,11 +5,11 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class GroupVO {
+public class TagVo {
 
     private Long id;
 
-    @NotBlank(message = "分组名称不能为空")
-    private String groupName;
+    @NotBlank(message = "标签名称不能为空")
+    private String tagName;
 
 }

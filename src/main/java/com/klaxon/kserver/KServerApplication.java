@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
-@MapperScan
+@MapperScan(value = "com.klaxon.kserver.mapper")
 @EnableWebMvc
 @EnableOpenApi
 @SpringBootApplication

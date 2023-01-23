@@ -2,7 +2,7 @@ package com.klaxon.kserver.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.klaxon.kserver.entity.dao.Group;
-import com.klaxon.kserver.entity.vo.GroupVO;
+import com.klaxon.kserver.entity.vo.GroupVo;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.pojo.Response;
 import com.klaxon.kserver.service.IGroupService;
@@ -19,8 +19,8 @@ public class GroupController {
     private IGroupService groupService;
 
     @PostMapping("/add")
-    public <R> Response<R> add(@RequestBody @Validated GroupVO groupVO) {
-        groupService.add(groupVO.getGroupName());
+    public <R> Response<R> add(@RequestBody @Validated GroupVo groupVo) {
+        groupService.add(groupVo.getGroupName());
         return Response.success();
     }
 
@@ -36,7 +36,7 @@ public class GroupController {
     }
 
     @PostMapping("/remove")
-    public <R> Response<R> remove(@RequestBody GroupVO params) {
+    public <R> Response<R> remove(@RequestBody GroupVo params) {
         groupService.remove(params.getId());
         return Response.success();
     }

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
-public class WebPageTagVO {
+public class WebPageTagVo {
 
     @NotBlank(message = "请求参数有误，请核对后重试")
     private Long id;

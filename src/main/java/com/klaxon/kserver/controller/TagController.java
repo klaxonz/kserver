@@ -2,7 +2,7 @@ package com.klaxon.kserver.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.klaxon.kserver.entity.dao.Tag;
-import com.klaxon.kserver.entity.vo.TagVO;
+import com.klaxon.kserver.entity.vo.TagVo;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.pojo.Response;
 import com.klaxon.kserver.service.ITagService;
@@ -19,7 +19,7 @@ public class TagController {
     private ITagService tagService;
 
     @PostMapping("/add")
-    public <R> Response<R> add(@RequestBody @Validated TagVO tagVO) {
+    public <R> Response<R> add(@RequestBody @Validated TagVo tagVO) {
         tagService.add(tagVO.getTagName());
         return Response.success();
     }
@@ -36,7 +36,7 @@ public class TagController {
     }
 
     @PostMapping("/remove")
-    public <R> Response<R> remove(@RequestBody TagVO params) {
+    public <R> Response<R> remove(@RequestBody TagVo params) {
         tagService.remove(params.getId());
         return Response.success();
     }

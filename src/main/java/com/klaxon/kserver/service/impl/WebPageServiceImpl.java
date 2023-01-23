@@ -19,13 +19,14 @@ import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
 import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
 import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
+import com.klaxon.kserver.constants.WebPageConstant;
 import com.klaxon.kserver.entity.dao.Group;
 import com.klaxon.kserver.entity.dao.Tag;
 import com.klaxon.kserver.entity.dao.WebPage;
 import com.klaxon.kserver.entity.dao.WebPageTag;
-import com.klaxon.kserver.entity.dto.WebPageDTO;
+import com.klaxon.kserver.entity.dto.WebPageDto;
 import com.klaxon.kserver.entity.vo.WebPageDetail;
-import com.klaxon.kserver.entity.vo.WebPageTagVO;
+import com.klaxon.kserver.entity.vo.WebPageTagVo;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.exception.BizException;
 import com.klaxon.kserver.mapper.GroupMapper;
@@ -33,6 +34,7 @@ import com.klaxon.kserver.mapper.TagMapper;
 import com.klaxon.kserver.mapper.WebPageMapper;
 import com.klaxon.kserver.mapper.WebPageTagMapper;
 import com.klaxon.kserver.service.IWebPageService;
+import com.klaxon.kserver.util.ThreadLocalHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -61,12 +63,10 @@ public class WebPageServiceImpl implements IWebPageService {
     @Autowired
     private WebPageTagMapper webPageTagMapper;
 
-    private final static String faviconBaseUrl = "https://www.google.com/s2/favicons?domain=";
-
     @Override
-    public void add(WebPageDTO webPageDTO) {
+    public void add(WebPageDto webPageDto) {
         String defaultGroupName = "默认";
-        Long groupId = webPageDTO.getGroupId();
+        Long groupId = webPageDto.getGroupId();
         if (Objects.isNull(groupId)) {
             Group defaultGroup = groupMapper.selectOne(new LambdaQueryWrapper<Group>().eq(Group::getGroupName, defaultGroupName));
             groupId = defaultGroup.getId();
@@ -77,7 +77,7 @@ public class WebPageServiceImpl implements IWebPageService {
             }
         }
 
-        String url = webPageDTO.getUrl();
+        String url = webPageDto.getUrl();
         Document document = null;
         String title = Strings.EMPTY;
         String description = Strings.EMPTY;
@@ -105,12 +105,13 @@ public class WebPageServiceImpl implements IWebPageService {
         }
 
         WebPage webPage = new WebPage();
+        webPage.setUserId(ThreadLocalHolder.get().getId());
         webPage.setUrl(url);
         webPage.setGroupId(groupId);
         webPage.setIsStar("0");
         webPage.setTitle(title);
         webPage.setSource(source);
-        webPage.setFavicon(faviconBaseUrl + url);
+        webPage.setFavicon(WebPageConstant.faviconBaseUrl + url);
         webPage.setDescription(description);
         webPageMapper.insert(webPage);
     }
@@ -209,7 +210,7 @@ public class WebPageServiceImpl implements IWebPageService {
                         System.out.println("Error: " + throwable.getLocalizedMessage());
                     }
                 })
-                .saveTo(new File("D:\\Temp\\youtube"))
+                .saveTo(new File("/Users/kail/Downloads"))
                 .async();
         Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
         File data = downloadResponse.data(); // will block current thread
@@ -218,14 +219,14 @@ public class WebPageServiceImpl implements IWebPageService {
 
     @Override
     @Transactional
-    public void addTags(WebPageTagVO webPageTagVO) {
+    public void addTags(WebPageTagVo webPageTagVO) {
         Long webPageId = webPageTagVO.getId();
         WebPage webPage = webPageMapper.selectById(webPageId);
         if (Objects.isNull(webPage)) {
             throw new BizException(BizCodeEnum.WEBPAGE_0010001);
         }
-        List<WebPageTagVO.WebPageTagItem> tags = webPageTagVO.getTags();
-        for (WebPageTagVO.WebPageTagItem webPageTagItem : tags) {
+        List<WebPageTagVo.WebPageTagItem> tags = webPageTagVO.getTags();
+        for (WebPageTagVo.WebPageTagItem webPageTagItem : tags) {
             Long tagId = webPageTagItem.getTagId();
             String tagName = webPageTagItem.getTagName();
 
@@ -264,15 +265,15 @@ public class WebPageServiceImpl implements IWebPageService {
     }
 
     @Override
-    public void removeTags(WebPageTagVO webPageTagVO) {
+    public void removeTags(WebPageTagVo webPageTagVO) {
         Long webPageId = webPageTagVO.getId();
         WebPage webPage = webPageMapper.selectById(webPageId);
         if (Objects.isNull(webPage)) {
             throw new BizException(BizCodeEnum.WEBPAGE_0010001);
         }
 
-        List<WebPageTagVO.WebPageTagItem> tags = webPageTagVO.getTags();
-        for (WebPageTagVO.WebPageTagItem webPageTagItem : tags) {
+        List<WebPageTagVo.WebPageTagItem> tags = webPageTagVO.getTags();
+        for (WebPageTagVo.WebPageTagItem webPageTagItem : tags) {
             Long tagId = webPageTagItem.getTagId();
             if (Objects.isNull(tagId)) {
                 continue;
@@ -306,12 +307,16 @@ public class WebPageServiceImpl implements IWebPageService {
     @Override
     public IPage<WebPage> search(String type, String question, Integer page) {
         LambdaQueryWrapper<WebPage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(WebPage::getCreateTime);
+        queryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .orderByDesc(WebPage::getCreateTime);
         if (StringUtils.equals(type, "title")) {
             queryWrapper.like(WebPage::getTitle, question);
-        } else if (StringUtils.equals(type, "content")) {
+        }
+        else if (StringUtils.equals(type, "content")) {
             queryWrapper.like(WebPage::getDescription, question);
-        } else {
+        }
+        else {
             queryWrapper.like(WebPage::getTitle, question)
                     .or()
                     .like(WebPage::getDescription, question);
@@ -323,19 +328,24 @@ public class WebPageServiceImpl implements IWebPageService {
 
     @Override
     public WebPage getOne(Long id) {
-        return webPageMapper.selectById(id);
+        return webPageMapper.selectOne(new LambdaQueryWrapper<WebPage>()
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getId, id));
     }
 
     @Override
     public WebPageDetail detail() {
         // all count
         LambdaQueryWrapper<WebPage> allQueryWrapper = new LambdaQueryWrapper<>();
-        allQueryWrapper.orderByDesc(WebPage::getCreateTime);
+        allQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .orderByDesc(WebPage::getCreateTime);
         Long allTotal = webPageMapper.selectCount(allQueryWrapper);
 
         // star count
         LambdaQueryWrapper<WebPage> starQueryWrapper = new LambdaQueryWrapper<>();
         starQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
                 .eq(WebPage::getIsStar, "1")
                 .orderByDesc(WebPage::getCreateTime);
         Long starTotal = webPageMapper.selectCount(starQueryWrapper);
@@ -343,6 +353,7 @@ public class WebPageServiceImpl implements IWebPageService {
         // today count
         LambdaQueryWrapper<WebPage> todayQueryWrapper = new LambdaQueryWrapper<>();
         todayQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
                 .apply("to_days(create_time) = to_days(now())")
                 .orderByDesc(WebPage::getCreateTime);
         Long todayTotal = webPageMapper.selectCount(todayQueryWrapper);
@@ -359,7 +370,10 @@ public class WebPageServiceImpl implements IWebPageService {
     public IPage<WebPage> getAll(Integer page) {
         IPage<WebPage> searchPage = new Page<>(page, 50);
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.orderByDesc(WebPage::getCreateTime);
+        lambdaQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .orderByDesc(WebPage::getCreateTime);
+
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
     }
 
@@ -369,6 +383,7 @@ public class WebPageServiceImpl implements IWebPageService {
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(WebPage::getIsStar, "1")
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
                 .orderByDesc(WebPage::getCreateTime);
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
     }
@@ -378,6 +393,7 @@ public class WebPageServiceImpl implements IWebPageService {
         IPage<WebPage> searchPage = new Page<>(page, 50);
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
                 .apply("to_days(create_time) = to_days(now())")
                 .orderByDesc(WebPage::getCreateTime);
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
@@ -385,11 +401,15 @@ public class WebPageServiceImpl implements IWebPageService {
 
     @Override
     public void remove(Long id) {
-        webPageMapper.deleteById(id);
+        webPageMapper.delete(new LambdaQueryWrapper<WebPage>()
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getId, id));
     }
 
     @Override
     public void batchRemove(List<Long> webpageIds) {
-        webPageMapper.deleteBatchIds(webpageIds);
+        webPageMapper.delete(new LambdaQueryWrapper<WebPage>()
+                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .in(WebPage::getId, webpageIds));
     }
 }

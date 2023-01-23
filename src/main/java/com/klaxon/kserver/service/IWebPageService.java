@@ -2,15 +2,15 @@ package com.klaxon.kserver.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.klaxon.kserver.entity.dao.WebPage;
-import com.klaxon.kserver.entity.dto.WebPageDTO;
+import com.klaxon.kserver.entity.dto.WebPageDto;
 import com.klaxon.kserver.entity.vo.WebPageDetail;
-import com.klaxon.kserver.entity.vo.WebPageTagVO;
+import com.klaxon.kserver.entity.vo.WebPageTagVo;
 
 import java.util.List;
 
 public interface IWebPageService {
 
-    void add(WebPageDTO webPageResourceDTO);
+    void add(WebPageDto webPageDto);
 
     WebPage getOne(Long id);
 
@@ -26,9 +26,9 @@ public interface IWebPageService {
 
     void batchRemove(List<Long> webpageIds);
 
-    void addTags(WebPageTagVO webPageTagVO);
+    void addTags(WebPageTagVo webPageTagVO);
 
-    void removeTags(WebPageTagVO webPageTagVO);
+    void removeTags(WebPageTagVo webPageTagVO);
 
     void changeGroup(Long webpageId, Long groupId);
 

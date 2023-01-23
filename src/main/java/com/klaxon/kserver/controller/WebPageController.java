@@ -2,14 +2,14 @@ package com.klaxon.kserver.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.klaxon.kserver.entity.dao.WebPage;
-import com.klaxon.kserver.entity.dto.WebPageDTO;
+import com.klaxon.kserver.entity.dto.WebPageDto;
 import com.klaxon.kserver.entity.vo.WebPageDetail;
-import com.klaxon.kserver.entity.vo.WebPageTagVO;
-import com.klaxon.kserver.entity.vo.WebPageVO;
+import com.klaxon.kserver.entity.vo.WebPageTagVo;
+import com.klaxon.kserver.entity.vo.WebPageVo;
 import com.klaxon.kserver.exception.BizCodeEnum;
+import com.klaxon.kserver.mapperstruct.WebPageMapperStruct;
 import com.klaxon.kserver.pojo.Response;
 import com.klaxon.kserver.service.IWebPageService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,28 +23,30 @@ public class WebPageController {
     @Autowired
     private IWebPageService webPageService;
 
+    @Autowired
+    private WebPageMapperStruct webPageMapperStruct;
+
     @PostMapping("/add")
-    public <R> Response<R> add(@RequestBody @Validated WebPageVO params) {
-        WebPageDTO webPageDTO = new WebPageDTO();
-        BeanUtils.copyProperties(params, webPageDTO);
-        webPageService.add(webPageDTO);
+    public <R> Response<R> add(@RequestBody @Validated WebPageVo params) {
+        WebPageDto webPageDto = webPageMapperStruct.voToDto(params);
+        webPageService.add(webPageDto);
         return Response.success();
     }
 
     @PostMapping("/addTag")
-    public <R> Response<R> addTag(@RequestBody WebPageTagVO webPageTagVO) {
+    public <R> Response<R> addTag(@RequestBody WebPageTagVo webPageTagVO) {
         webPageService.addTags(webPageTagVO);
         return Response.success();
     }
 
     @PostMapping("/removeTag")
-    public <R> Response<R> removeTag(@RequestBody WebPageTagVO webPageTagVO) {
+    public <R> Response<R> removeTag(@RequestBody WebPageTagVo webPageTagVO) {
         webPageService.removeTags(webPageTagVO);
         return Response.success();
     }
 
     @PostMapping("/changeGroup")
-    public <R> Response<R> changeGroup(@RequestBody WebPageVO params) {
+    public <R> Response<R> changeGroup(@RequestBody WebPageVo params) {
         webPageService.changeGroup(params.getId(), params.getGroupId());
         return Response.success();
     }
