@@ -20,6 +20,7 @@ import com.github.kiulian.downloader.model.videos.formats.Format;
 import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
 import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
 import com.klaxon.kserver.constants.WebPageConstant;
+import com.klaxon.kserver.downloader.HttpDownloader;
 import com.klaxon.kserver.entity.dao.Group;
 import com.klaxon.kserver.entity.dao.Tag;
 import com.klaxon.kserver.entity.dao.WebPage;
@@ -152,29 +153,12 @@ public class WebPageServiceImpl implements IWebPageService {
         video.bestVideoWithAudioFormat();
         video.bestAudioFormat();
         Format format = video.bestVideoFormat();
-
-        // async downloading with callback
-        RequestVideoFileDownload downloadRequest = new RequestVideoFileDownload(format)
-                .callback(new YoutubeProgressCallback<File>() {
-                    @Override
-                    public void onDownloading(int progress) {
-                        System.out.printf("Downloaded %d%%\n", progress);
-                    }
-
-                    @Override
-                    public void onFinished(File videoInfo) {
-                        System.out.println("Finished file: " + videoInfo);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        System.out.println("Error: " + throwable.getLocalizedMessage());
-                    }
-                })
-                .saveTo(new File(DEFAULT_FILE_STORE_DIRECTORY))
-                .async();
-        Response<File> downloadResponse = downloader.downloadVideoFile(downloadRequest);
-        File data = downloadResponse.data(); // will block current thread
+        HttpDownloader httpDownloader = new HttpDownloader();
+        try {
+            httpDownloader.download(format.url(), new File(DEFAULT_FILE_STORE_DIRECTORY + "/2023012421065600.mp4"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
