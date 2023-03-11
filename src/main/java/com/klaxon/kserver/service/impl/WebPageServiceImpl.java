@@ -4,23 +4,9 @@ import cn.hutool.core.net.url.UrlBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.kiulian.downloader.Config;
-import com.github.kiulian.downloader.YoutubeDownloader;
-import com.github.kiulian.downloader.downloader.YoutubeCallback;
-import com.github.kiulian.downloader.downloader.YoutubeProgressCallback;
-import com.github.kiulian.downloader.downloader.request.RequestVideoFileDownload;
-import com.github.kiulian.downloader.downloader.request.RequestVideoInfo;
-import com.github.kiulian.downloader.downloader.response.Response;
-import com.github.kiulian.downloader.model.Extension;
-import com.github.kiulian.downloader.model.Filter;
-import com.github.kiulian.downloader.model.videos.VideoDetails;
-import com.github.kiulian.downloader.model.videos.VideoInfo;
-import com.github.kiulian.downloader.model.videos.formats.AudioFormat;
-import com.github.kiulian.downloader.model.videos.formats.Format;
-import com.github.kiulian.downloader.model.videos.formats.VideoFormat;
-import com.github.kiulian.downloader.model.videos.formats.VideoWithAudioFormat;
+import com.jfposton.ytdlp.YtDlpRequest;
 import com.klaxon.kserver.constants.WebPageConstant;
-import com.klaxon.kserver.downloader.HttpDownloader;
+import com.klaxon.kserver.downloader.DownloadTask;
 import com.klaxon.kserver.entity.dao.Group;
 import com.klaxon.kserver.entity.dao.Tag;
 import com.klaxon.kserver.entity.dao.WebPage;
@@ -28,12 +14,14 @@ import com.klaxon.kserver.entity.dao.WebPageTag;
 import com.klaxon.kserver.entity.dto.WebPageDto;
 import com.klaxon.kserver.entity.vo.WebPageDetail;
 import com.klaxon.kserver.entity.vo.WebPageTagVo;
+import com.klaxon.kserver.entity.vo.WebPageVo;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.exception.BizException;
 import com.klaxon.kserver.mapper.GroupMapper;
 import com.klaxon.kserver.mapper.TagMapper;
 import com.klaxon.kserver.mapper.WebPageMapper;
 import com.klaxon.kserver.mapper.WebPageTagMapper;
+import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.IWebPageService;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -42,23 +30,21 @@ import org.apache.logging.log4j.util.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 @Service("webPageService")
 @Slf4j
 public class WebPageServiceImpl implements IWebPageService {
-
-    private static final String DEFAULT_FILE_STORE_DIRECTORY = "/Users/kail/Downloads";
 
     @Autowired
     private TagMapper tagMapper;
@@ -69,10 +55,17 @@ public class WebPageServiceImpl implements IWebPageService {
     @Autowired
     private WebPageTagMapper webPageTagMapper;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
+    @Autowired
+    private YtDlpProperty ytDlpProperty;
+
+    @Autowired
+    @Qualifier("videoParseTaskExecutor")
+    private ThreadPoolTaskExecutor videoParseTaskExecutor;
+
 
     @Override
-    public void add(WebPageDto webPageDto) {
+    @Transactional
+    public WebPageVo add(WebPageDto webPageDto) {
         String defaultGroupName = "默认";
         Long groupId = webPageDto.getGroupId();
         if (Objects.isNull(groupId)) {
@@ -106,15 +99,8 @@ public class WebPageServiceImpl implements IWebPageService {
         UrlBuilder urlBuilder = UrlBuilder.of(url);
         String source = String.join("://", urlBuilder.getScheme(), urlBuilder.getHost());
 
-        // 视频解析
-        if (urlBuilder.getHost().equals("www.youtube.com")) {
-            executorService.submit(() -> {
-                downloadVideo(urlBuilder);
-            });
-        }
-
         WebPage webPage = new WebPage();
-        webPage.setUserId(ThreadLocalHolder.get().getId());
+        webPage.setUserId(ThreadLocalHolder.getUser().getId());
         webPage.setUrl(url);
         webPage.setGroupId(groupId);
         webPage.setIsStar("0");
@@ -123,42 +109,20 @@ public class WebPageServiceImpl implements IWebPageService {
         webPage.setFavicon(WebPageConstant.faviconBaseUrl + url);
         webPage.setDescription(description);
         webPageMapper.insert(webPage);
-    }
 
-    private void downloadVideo(UrlBuilder urlBuilder) {
-        // init downloader with default config
-        YoutubeDownloader downloader = new YoutubeDownloader();
-        Config config = downloader.getConfig();
-        config.setMaxRetries(0);
+        // 使用yt-dlp下载视频
+        String directory = ytDlpProperty.getDestination();
+        YtDlpRequest request = new YtDlpRequest(url, directory);
+        request.setOption("retries", 10);
+        request.setOption("cookies-from-browser", ytDlpProperty.getCookiesFromBrowser());
+        DownloadTask downloadTask = new DownloadTask(request);
+        videoParseTaskExecutor.submit(downloadTask);
 
-        String videoId = urlBuilder.getQueryStr().split("=")[1];
-        // async parsing
-        RequestVideoInfo request = new RequestVideoInfo(videoId)
-                .callback(new YoutubeCallback<VideoInfo>() {
-                    @Override
-                    public void onFinished(VideoInfo videoInfo) {
-                        System.out.println("Finished parsing");
-                    }
+        WebPageVo webPageVo = new WebPageVo();
+        BeanUtils.copyProperties(webPage, webPageVo);
 
-                    @Override
-                    public void onError(Throwable throwable) {
-                        System.out.println("Error: " + throwable.getMessage());
-                    }
-                })
-                .async();
-        Response<VideoInfo> response = downloader.getVideoInfo(request);
-        VideoInfo video = response.data();
+        return webPageVo;
 
-        // get best format
-        video.bestVideoWithAudioFormat();
-        video.bestAudioFormat();
-        Format format = video.bestVideoFormat();
-        HttpDownloader httpDownloader = new HttpDownloader();
-        try {
-            httpDownloader.download(format.url(), new File(DEFAULT_FILE_STORE_DIRECTORY + "/2023012421065600.mp4"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -252,7 +216,7 @@ public class WebPageServiceImpl implements IWebPageService {
     public IPage<WebPage> search(String type, String question, Integer page) {
         LambdaQueryWrapper<WebPage> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .orderByDesc(WebPage::getCreateTime);
         if (StringUtils.equals(type, "title")) {
             queryWrapper.like(WebPage::getTitle, question);
@@ -273,7 +237,7 @@ public class WebPageServiceImpl implements IWebPageService {
     @Override
     public WebPage getOne(Long id) {
         return webPageMapper.selectOne(new LambdaQueryWrapper<WebPage>()
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .eq(WebPage::getId, id));
     }
 
@@ -282,14 +246,14 @@ public class WebPageServiceImpl implements IWebPageService {
         // all count
         LambdaQueryWrapper<WebPage> allQueryWrapper = new LambdaQueryWrapper<>();
         allQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .orderByDesc(WebPage::getCreateTime);
         Long allTotal = webPageMapper.selectCount(allQueryWrapper);
 
         // star count
         LambdaQueryWrapper<WebPage> starQueryWrapper = new LambdaQueryWrapper<>();
         starQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .eq(WebPage::getIsStar, "1")
                 .orderByDesc(WebPage::getCreateTime);
         Long starTotal = webPageMapper.selectCount(starQueryWrapper);
@@ -297,7 +261,7 @@ public class WebPageServiceImpl implements IWebPageService {
         // today count
         LambdaQueryWrapper<WebPage> todayQueryWrapper = new LambdaQueryWrapper<>();
         todayQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .apply("to_days(create_time) = to_days(now())")
                 .orderByDesc(WebPage::getCreateTime);
         Long todayTotal = webPageMapper.selectCount(todayQueryWrapper);
@@ -311,11 +275,29 @@ public class WebPageServiceImpl implements IWebPageService {
     }
 
     @Override
+    public IPage<WebPage> list(WebPageDto webPageDto) {
+        IPage<WebPage> searchPage = new Page<>(webPageDto.getPage(), webPageDto.getPageSize());
+        LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
+                .orderByDesc(WebPage::getCreateTime);
+
+        if (StringUtils.equals(webPageDto.getType(), "star")) {
+            lambdaQueryWrapper.eq(WebPage::getIsStar, "1");
+        }
+        if (StringUtils.equals(webPageDto.getType(), "today")) {
+            lambdaQueryWrapper.apply("to_days(create_time) = to_days(now())");
+        }
+
+        return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
+    }
+
+    @Override
     public IPage<WebPage> getAll(Integer page) {
         IPage<WebPage> searchPage = new Page<>(page, 50);
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .orderByDesc(WebPage::getCreateTime);
 
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
@@ -327,7 +309,7 @@ public class WebPageServiceImpl implements IWebPageService {
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(WebPage::getIsStar, "1")
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .orderByDesc(WebPage::getCreateTime);
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
     }
@@ -337,7 +319,7 @@ public class WebPageServiceImpl implements IWebPageService {
         IPage<WebPage> searchPage = new Page<>(page, 50);
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .apply("to_days(create_time) = to_days(now())")
                 .orderByDesc(WebPage::getCreateTime);
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
@@ -346,14 +328,14 @@ public class WebPageServiceImpl implements IWebPageService {
     @Override
     public void remove(Long id) {
         webPageMapper.delete(new LambdaQueryWrapper<WebPage>()
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .eq(WebPage::getId, id));
     }
 
     @Override
     public void batchRemove(List<Long> webpageIds) {
         webPageMapper.delete(new LambdaQueryWrapper<WebPage>()
-                .eq(WebPage::getUserId, ThreadLocalHolder.get().getId())
+                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
                 .in(WebPage::getId, webpageIds));
     }
 }

@@ -5,16 +5,19 @@ import com.klaxon.kserver.entity.dao.WebPage;
 import com.klaxon.kserver.entity.dto.WebPageDto;
 import com.klaxon.kserver.entity.vo.WebPageDetail;
 import com.klaxon.kserver.entity.vo.WebPageTagVo;
+import com.klaxon.kserver.entity.vo.WebPageVo;
 
 import java.util.List;
 
 public interface IWebPageService {
 
-    void add(WebPageDto webPageDto);
+    WebPageVo add(WebPageDto webPageDto);
 
     WebPage getOne(Long id);
 
     WebPageDetail detail();
+
+    IPage<WebPage> list(WebPageDto webPageDto);
 
     IPage<WebPage> getAll(Integer page);
 

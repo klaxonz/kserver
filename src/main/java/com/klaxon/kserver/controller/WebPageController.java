@@ -27,10 +27,9 @@ public class WebPageController {
     private WebPageMapperStruct webPageMapperStruct;
 
     @PostMapping("/add")
-    public <R> Response<R> add(@RequestBody @Validated WebPageVo params) {
+    public Response<Object> add(@RequestBody @Validated WebPageVo params) {
         WebPageDto webPageDto = webPageMapperStruct.voToDto(params);
-        webPageService.add(webPageDto);
-        return Response.success();
+        return Response.success(webPageService.add(webPageDto));
     }
 
     @PostMapping("/addTag")
@@ -62,9 +61,9 @@ public class WebPageController {
         return webPageService.detail();
     }
 
-    @GetMapping("/list/all/{page}")
-    public IPage<WebPage> listAll(@PathVariable("page") Integer page) {
-        return webPageService.getAll(page);
+    @PostMapping("/list")
+    public IPage<WebPage> list(@RequestBody WebPageDto webPageDto) {
+        return webPageService.list(webPageDto);
     }
 
     @GetMapping("/list/star/{page}")

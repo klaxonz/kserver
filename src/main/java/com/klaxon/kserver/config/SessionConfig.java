@@ -3,11 +3,8 @@ package com.klaxon.kserver.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.session.MapSessionRepository;
 import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.session.web.http.DefaultCookieSerializer;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 public class SessionConfig {
@@ -28,14 +25,6 @@ public class SessionConfig {
         // 最大生命周期的单位是分钟
         serializer.setCookieMaxAge(24 * 60 * 60);
         return serializer;
-    }
-
-    /**
-     * 注册序列化器
-     */
-    @Bean
-    public MapSessionRepository sessionRepository() {
-        return new MapSessionRepository(new ConcurrentHashMap<>());
     }
 
 }

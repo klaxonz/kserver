@@ -21,7 +21,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             return false;
         } else {
             OnlineUser onlineUser = new OnlineUser(account.getId(), account.getUsername());
-            ThreadLocalHolder.set(onlineUser);
+            ThreadLocalHolder.setUser(onlineUser);
             return true;
         }
     }
@@ -32,6 +32,6 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        ThreadLocalHolder.remove();
+        ThreadLocalHolder.removeUser();
     }
 }

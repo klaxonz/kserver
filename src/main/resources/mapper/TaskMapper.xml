@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.klaxon.kserver.mapper.TaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.klaxon.kserver.entity.dao.Task">
+            <id property="id" column="id" jdbcType="OTHER"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="webpageId" column="webpage_id" jdbcType="INTEGER"/>
+            <result property="videoProgress" column="video_progress" jdbcType="INTEGER"/>
+            <result property="audioProgress" column="audio_progress" jdbcType="INTEGER"/>
+            <result property="videoLength" column="video_length" jdbcType="INTEGER"/>
+            <result property="audioLength" column="audio_length" jdbcType="INTEGER"/>
+            <result property="videoDownloadedLength" column="video_downloaded_length" jdbcType="INTEGER"/>
+            <result property="audioDownloadedLength" column="audio_downloaded_length" jdbcType="INTEGER"/>
+            <result property="videoPath" column="video_path" jdbcType="VARCHAR"/>
+            <result property="audioPath" column="audio_path" jdbcType="VARCHAR"/>
+            <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,webpage_id,
+        video_progress,audio_progress,video_length,
+        audio_length,video_downloaded_length,audio_downloaded_length,
+        video_path,audio_path,file_path,
+        create_time,update_time
+    </sql>
+</mapper>

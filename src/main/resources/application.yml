@@ -7,6 +7,8 @@ server:
       force: true
       charset: UTF-8
       enabled: true
+    session:
+      timeout: 24h
 
 spring:
   datasource:
@@ -19,6 +21,16 @@ spring:
       min-idle: 5
       initial-size: 5
       max-wait-millis: 10000
+  cache:
+    type: CAFFEINE
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+  redis:
+    host: 127.0.0.1
+    port: 16379
+    password: sOmE_sEcUrE_pAsS
+  session:
+    store-type: redis
   devtools:
     restart:
       enabled: true
@@ -28,3 +40,9 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+ffmpeg:
+  path: D:\Program\Scoop\apps\ffmpeg\5.1.2\bin\ffmpeg.exe
+
+yt-dlp:
+  destination: D:\Temp\yt-dlp
+  cookies-from-browser:  vivaldi:"D:\Program\Scoop\apps\vivaldi\current\User Data"
