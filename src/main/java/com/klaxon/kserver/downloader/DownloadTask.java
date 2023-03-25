@@ -14,11 +14,8 @@ public class DownloadTask implements Runnable{
     public void run() {
         YtDlpResponse response = null;
         try {
-            response = YtDlp.execute(request, new DownloadProgressCallback() {
-                @Override
-                public void onProgressUpdate(float progress, long etaInSeconds) {
-                    System.out.println(String.valueOf(progress) + "%");
-                }
+            response = YtDlp.execute(request, (progress, etaInSeconds) ->{
+                System.out.println(progress + "%");
             });
         } catch (YtDlpException e) {
             e.printStackTrace();

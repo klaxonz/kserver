@@ -70,7 +70,15 @@ public class WebPageServiceImpl implements IWebPageService {
         Long groupId = webPageDto.getGroupId();
         if (Objects.isNull(groupId)) {
             Group defaultGroup = groupMapper.selectOne(new LambdaQueryWrapper<Group>().eq(Group::getGroupName, defaultGroupName));
-            groupId = defaultGroup.getId();
+            if (Objects.isNull(defaultGroup)) {
+                Group group = new Group();
+                group.setGroupName("默认");
+                group.setUserId(ThreadLocalHolder.getUser().getId());
+                groupMapper.insert(group);
+                groupId = group.getId();
+            } else {
+                groupId = defaultGroup.getId();
+            }
         } else {
             Group group = groupMapper.selectById(groupId);
             if (Objects.isNull(group)) {

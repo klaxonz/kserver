@@ -13,6 +13,7 @@ public class Group {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
+    private Long userId;
     private String groupName;
     private Timestamp updateTime;
     private Timestamp createTime;
