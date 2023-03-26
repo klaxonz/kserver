@@ -62,18 +62,8 @@ public class WebPageController {
     }
 
     @PostMapping("/list")
-    public IPage<WebPage> list(@RequestBody WebPageDto webPageDto) {
-        return webPageService.list(webPageDto);
-    }
-
-    @GetMapping("/list/star/{page}")
-    public IPage<WebPage> listStar(@PathVariable("page") Integer page) {
-        return webPageService.getStar(page);
-    }
-
-    @GetMapping("/list/today/{page}")
-    public IPage<WebPage> listToday(@PathVariable("page") Integer page) {
-        return webPageService.getToday(page);
+    public IPage<WebPage> list(@RequestBody WebPageDto webPageDto,  @RequestParam(value = "q", required = false) String question) {
+        return webPageService.list(webPageDto, question);
     }
 
     @PostMapping("/remove")
@@ -86,11 +76,6 @@ public class WebPageController {
     public <R> Response<R> batchRemove(@RequestBody List<Long> webpageIds) {
         webPageService.batchRemove(webpageIds);
         return Response.success();
-    }
-
-    @GetMapping("/search")
-    public <R> IPage<WebPage> search(@RequestParam("type") String type, @RequestParam("q") String question, @RequestParam("page") Integer page) {
-        return webPageService.search(type, question, page);
     }
 
 }

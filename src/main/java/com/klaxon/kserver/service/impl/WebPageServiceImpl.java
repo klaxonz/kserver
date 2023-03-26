@@ -221,28 +221,6 @@ public class WebPageServiceImpl implements IWebPageService {
     }
 
     @Override
-    public IPage<WebPage> search(String type, String question, Integer page) {
-        LambdaQueryWrapper<WebPage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
-                .orderByDesc(WebPage::getCreateTime);
-        if (StringUtils.equals(type, "title")) {
-            queryWrapper.like(WebPage::getTitle, question);
-        }
-        else if (StringUtils.equals(type, "content")) {
-            queryWrapper.like(WebPage::getDescription, question);
-        }
-        else {
-            queryWrapper.like(WebPage::getTitle, question)
-                    .or()
-                    .like(WebPage::getDescription, question);
-        }
-        IPage<WebPage> searchPage = new Page<>(page, 50);
-
-        return webPageMapper.selectPage(searchPage, queryWrapper);
-    }
-
-    @Override
     public WebPage getOne(Long id) {
         return webPageMapper.selectOne(new LambdaQueryWrapper<WebPage>()
                 .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
@@ -283,7 +261,7 @@ public class WebPageServiceImpl implements IWebPageService {
     }
 
     @Override
-    public IPage<WebPage> list(WebPageDto webPageDto) {
+    public IPage<WebPage> list(WebPageDto webPageDto, String question) {
         IPage<WebPage> searchPage = new Page<>(webPageDto.getPage(), webPageDto.getPageSize());
         LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
@@ -297,39 +275,14 @@ public class WebPageServiceImpl implements IWebPageService {
             lambdaQueryWrapper.apply("to_days(create_time) = to_days(now())");
         }
 
-        return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
-    }
+        if (StringUtils.isNotBlank(question)) {
+            lambdaQueryWrapper.and(webPageLambdaQueryWrapper -> {
+                webPageLambdaQueryWrapper.like(WebPage::getTitle, question)
+                        .or()
+                        .like(WebPage::getDescription, question);
+            });
+        }
 
-    @Override
-    public IPage<WebPage> getAll(Integer page) {
-        IPage<WebPage> searchPage = new Page<>(page, 50);
-        LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
-                .orderByDesc(WebPage::getCreateTime);
-
-        return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
-    }
-
-    @Override
-    public IPage<WebPage> getStar(Integer page) {
-        IPage<WebPage> searchPage = new Page<>(page, 50);
-        LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper
-                .eq(WebPage::getIsStar, "1")
-                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
-                .orderByDesc(WebPage::getCreateTime);
-        return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
-    }
-
-    @Override
-    public IPage<WebPage> getToday(Integer page) {
-        IPage<WebPage> searchPage = new Page<>(page, 50);
-        LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper
-                .eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
-                .apply("to_days(create_time) = to_days(now())")
-                .orderByDesc(WebPage::getCreateTime);
         return webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
     }
 

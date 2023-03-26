@@ -17,13 +17,7 @@ public interface IWebPageService {
 
     WebPageDetail detail();
 
-    IPage<WebPage> list(WebPageDto webPageDto);
-
-    IPage<WebPage> getAll(Integer page);
-
-    IPage<WebPage> getStar(Integer page);
-
-    IPage<WebPage> getToday(Integer page);
+    IPage<WebPage> list(WebPageDto webPageDto, String question);
 
     void remove(Long id);
 
@@ -35,5 +29,4 @@ public interface IWebPageService {
 
     void changeGroup(Long webpageId, Long groupId);
 
-    IPage<WebPage> search(String type, String question, Integer page);
 }
