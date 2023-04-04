@@ -1,24 +1,37 @@
 package com.klaxon.kserver.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.time.Duration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 public class RestTemplateConfig {
 
-    @Autowired
-    private RestTemplateBuilder builder;
+	@Bean
+	public RedisTemplate restTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
+		RedisTemplate template = new RedisTemplate<>();
+		template.setConnectionFactory(redisConnectionFactory);
 
-    @Bean
-    public RestTemplate restTemplate() {
-        return builder.setConnectTimeout(Duration.ofMillis(10000))
-                .setReadTimeout(Duration.ofMillis(10000))
-                .build();
-    }
+		// 配置序列化方式
+		Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
+				Object.class);
+		jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+
+		StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+		// key 采用String的序列化方式
+		template.setKeySerializer(stringRedisSerializer);
+		// hash
+		template.setHashKeySerializer(stringRedisSerializer);
+		// value
+		template.setValueSerializer(jackson2JsonRedisSerializer);
+		template.afterPropertiesSet();
+
+		return template;
+	}
 
 }

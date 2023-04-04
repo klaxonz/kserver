@@ -1,6 +1,6 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
 }
 
@@ -18,28 +18,18 @@ dependencies {
     // 正式依赖
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
-
     implementation 'org.springframework.session:spring-session-data-redis'
+
+    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
+    implementation 'mysql:mysql-connector-java:8.0.28'
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'org.hibernate.validator:hibernate-validator:6.2.0.Final'
     implementation 'cn.hutool:hutool-all:5.8.11'
-    implementation 'com.baomidou:mybatis-plus-boot-starter:3.5.2'
-    implementation 'mysql:mysql-connector-java:8.0.28'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.jsoup:jsoup:1.15.3'
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-    implementation 'com.github.ben-manes.caffeine:caffeine:2.9.2'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
-
-
-    implementation 'org.springframework.boot:spring-boot-devtools:2.7.3'
-    implementation 'com.github.sealedtx:java-youtube-downloader:3.1.0'
-    implementation 'com.github.chenliang15405:ffmpeg-common:3.2'
-
-    implementation 'com.github.Riko-L:yt-dlp-java:6405046e0d'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'

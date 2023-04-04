@@ -1,73 +1,47 @@
 package com.klaxon.kserver.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.klaxon.kserver.advice.LoginInterceptor;
-import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klaxon.kserver.aop.LoginInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Bean
-    public HttpMessageConverter<String> responseBodyConverter() {
-        final StringHttpMessageConverter converter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
-        converter.setWriteAcceptCharset(false);
-        return converter;
-    }
+	@Resource
+	private ObjectMapper objectMapper;
 
-    @Override
-    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        if (converters.size() > 0) {
-            converters.add(converters.get(0));
-            converters.set(0, responseBodyConverter());
-        } else {
-            converters.add(responseBodyConverter());
-        }
-    }
+	@Override
+	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		converter.setObjectMapper(objectMapper);
+		converters.add(0, converter);
+	}
 
-    @Override
-    public void configureMessageConverters(@NotNull List<HttpMessageConverter<?>> converters) {
-        WebMvcConfigurer.super.configureMessageConverters(converters);
+	@Bean
+	public HandlerInterceptor getInterceptor() {
+		return new LoginInterceptor();
+	}
 
-        MappingJackson2HttpMessageConverter jackson2HttpMessageConverter =
-                new MappingJackson2HttpMessageConverter();
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-        simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
-        objectMapper.registerModule(simpleModule);
-        jackson2HttpMessageConverter.setObjectMapper(objectMapper);
-
-        converters.add(0, jackson2HttpMessageConverter);
-    }
-
-    /**
-     * 把我们定义的拦截器类注册为Bean
-     */
-    @Bean
-    public HandlerInterceptor getInterceptor() {
-        return new LoginInterceptor();
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        List<String> pathPatterns = new ArrayList<>();
-        pathPatterns.add("/account/login");
-        pathPatterns.add("/account/register");
-        registry.addInterceptor(getInterceptor()).excludePathPatterns(pathPatterns);
-    }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		List<String> pathPatterns = new ArrayList<>();
+		pathPatterns.add("/account/login");
+		pathPatterns.add("/account/register");
+		pathPatterns.add("/web-page-task/img/*");
+		pathPatterns.add("/web-page-task/video/*");
+		registry.addInterceptor(getInterceptor()).excludePathPatterns(pathPatterns);
+	}
 
 }

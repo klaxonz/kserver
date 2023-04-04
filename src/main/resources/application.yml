@@ -36,13 +36,16 @@ spring:
       enabled: true
 
 mybatis-plus:
-  mapper-locations: classpath*:xml/*.xml
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+  mapper-locations: src/main/java/com/klaxon/kserver/mapper/xml/*.xml
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 ffmpeg:
   path: D:\Program\Scoop\apps\ffmpeg\5.1.2\bin\ffmpeg.exe
 
 yt-dlp:
-  destination: D:\Temp\yt-dlp
-  cookies-from-browser:  vivaldi:"D:\Program\Scoop\apps\vivaldi\current\User Data"
+  destination: D:\Temp\yt-dlp\
+  cookies-from-browser: vivaldi:D:\Program\Scoop\apps\vivaldi\current\User Data

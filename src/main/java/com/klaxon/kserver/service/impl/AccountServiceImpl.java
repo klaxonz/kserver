@@ -1,78 +1,95 @@
 package com.klaxon.kserver.service.impl;
 
-import cn.hutool.crypto.digest.MD5;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.klaxon.kserver.entity.dto.LoginAccountDto;
-import com.klaxon.kserver.entity.dto.RegisterAccountDto;
-import com.klaxon.kserver.entity.dao.Account;
-import com.klaxon.kserver.entity.vo.AccountVo;
+import com.klaxon.kserver.controller.vo.AccountVo;
+import com.klaxon.kserver.converter.AccountMapperStruct;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.exception.BizException;
 import com.klaxon.kserver.mapper.AccountMapper;
-import com.klaxon.kserver.mapperstruct.AccountMapperStruct;
-import com.klaxon.kserver.service.IAccountService;
+import com.klaxon.kserver.mapper.model.Account;
+import com.klaxon.kserver.service.AccountService;
+import com.klaxon.kserver.service.dto.AccountDto;
+
+import cn.hutool.crypto.digest.MD5;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
-
-
-@Service("accountService")
+@Service
 @Slf4j
-public class AccountServiceImpl implements IAccountService {
+public class AccountServiceImpl implements AccountService {
 
-    @Autowired
-    private AccountMapper accountMapper;
+	@Resource
+	private AccountMapper accountMapper;
+	@Resource
+	private AccountMapperStruct accountMapperStruct;
+	@Resource
+	private RedisTemplate redisTemplate;
 
-    @Autowired
-    private AccountMapperStruct accountMapperStruct;
+	@Override
+	public void createAccount(AccountDto accountDto) {
 
-    @Override
-    public void addAccount(RegisterAccountDto registerAccountDto) {
+		// 用户名重复校验
+		Account usernameAccount = accountMapper.selectOne(
+				new LambdaQueryWrapper<Account>().eq(Account::getUsername, accountDto.getUsername()));
+		if (!Objects.isNull(usernameAccount)) {
+			throw new BizException(BizCodeEnum.ACCOUNT_0030001);
+		}
+		// 邮箱重复校验
+		Account emailAccount = accountMapper
+				.selectOne(new LambdaQueryWrapper<Account>().eq(Account::getEmail, accountDto.getEmail()));
+		if (!Objects.isNull(emailAccount)) {
+			throw new BizException(BizCodeEnum.ACCOUNT_0030004);
+		}
 
-        // 用户名重复校验
-        Account usernameAccount = accountMapper.selectOne(new LambdaQueryWrapper<Account>().eq(Account::getUsername, registerAccountDto.getUsername()));
-        if (!Objects.isNull(usernameAccount)) {
-            throw new BizException(BizCodeEnum.ACCOUNT_0030001);
-        }
-        // 邮箱重复校验
-        Account emailAccount = accountMapper.selectOne(new LambdaQueryWrapper<Account>().eq(Account::getEmail, registerAccountDto.getEmail()));
-        if (!Objects.isNull(emailAccount)) {
-            throw new BizException(BizCodeEnum.ACCOUNT_0030004);
-        }
+		// md5 加密密码
+		MD5 md5 = MD5.create();
+		String digestHex = md5.digestHex(accountDto.getPassword());
 
-        // md5 加密密码
-        MD5 md5 = MD5.create();
-        String digestHex = md5.digestHex(registerAccountDto.getPassword());
+		Account account = new Account();
+		account.setUsername(account.getUsername());
+		account.setPassword(digestHex);
+		account.setEmail(account.getEmail());
+		accountMapper.insert(account);
+	}
 
-        Account account = new Account();
-        account.setUsername(registerAccountDto.getUsername());
-        account.setPassword(digestHex);
-        account.setEmail(registerAccountDto.getEmail());
-        accountMapper.insert(account);
-    }
+	@Override
+	public String login(AccountDto accountDto) {
+		Account account = accountMapper
+				.selectOne(new LambdaQueryWrapper<Account>().eq(Account::getEmail, accountDto.getEmail()));
+		if (Objects.isNull(account)) {
+			throw new BizException(BizCodeEnum.ACCOUNT_0030002);
+		}
+		MD5 md5 = MD5.create();
+		String digestHex = md5.digestHex(accountDto.getPassword());
+		if (!StringUtils.equals(digestHex, account.getPassword())) {
+			throw new BizException(BizCodeEnum.ACCOUNT_0030003);
+		}
 
-    @Override
-    public AccountVo login(LoginAccountDto loginAccountDto) {
-        Account account = accountMapper.selectOne(new LambdaQueryWrapper<Account>().eq(Account::getEmail, loginAccountDto.getEmail()));
-        if (Objects.isNull(account)) {
-            throw new BizException(BizCodeEnum.ACCOUNT_0030002);
-        }
-        // 比对密码
-        MD5 md5 = MD5.create();
-        String digestHex = md5.digestHex(loginAccountDto.getPassword());
-        if (!StringUtils.equals(digestHex, account.getPassword())) {
-            throw new BizException(BizCodeEnum.ACCOUNT_0030003);
-        }
-        return accountMapperStruct.entityToVo(account);
-    }
+		AccountVo accountVo = accountMapperStruct.entityToVo(account);
 
-    @Override
-    public void logout(HttpServletRequest request) {
-        request.getSession().invalidate();
-    }
+		String token = UUID.randomUUID().toString().replace("-", "");
+		String key = "account:token:" + token;
+		redisTemplate.opsForValue().set(key, accountVo);
+
+		return token;
+	}
+
+	@Override
+	public void logout(HttpServletRequest request) {
+		String token = request.getHeader("authorization");
+		String key = "account:token:" + token;
+		redisTemplate.opsForValue().getAndExpire(key, 1, TimeUnit.MICROSECONDS);
+		request.getSession().invalidate();
+	}
 
 }
