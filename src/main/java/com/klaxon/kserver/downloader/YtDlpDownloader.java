@@ -49,8 +49,14 @@ public class YtDlpDownloader {
 		baseCommand.add("--encoding=UTF-8");
 		baseCommand.add("-N");
 		baseCommand.add(String.valueOf(cores));
-		baseCommand.add("--cookies-from-browser");
-		baseCommand.add(ytDlpProperty.getCookiesFromBrowser());
+		if (StringUtils.isNotBlank(ytDlpProperty.getCookiesPath())) {
+			baseCommand.add("--cookies");
+			baseCommand.add(ytDlpProperty.getCookiesPath());
+		} else if (StringUtils.isNotBlank(ytDlpProperty.getCookiesFromBrowser())) {
+			baseCommand.add("--cookies-from-browser");
+			baseCommand.add(ytDlpProperty.getCookiesFromBrowser());
+		}
+
 		this.builder = createProcessBuilder();
 
 		isRetry = task.getId() != null;

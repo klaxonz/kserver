@@ -49,6 +49,7 @@ ffmpeg:
 yt-dlp:
   destination: D:\Temp\yt-dlp\
   cookies-from-browser: vivaldi:D:\Program\Scoop\apps\vivaldi\current\User Data
+  cookies-path: D:\Temp\test\www.bilibili.com_cookies.txt
 
 app:
   protocol: http

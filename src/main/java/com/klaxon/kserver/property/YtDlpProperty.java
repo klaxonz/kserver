@@ -14,6 +14,9 @@ public class YtDlpProperty {
 	@Value("${yt-dlp.destination}")
 	private String destination;
 
+	@Value("${yt-dlp.cookies-path}")
+	private String cookiesPath;
+
 	@Value("${yt-dlp.cookies-from-browser}")
 	private String cookiesFromBrowser;
 
