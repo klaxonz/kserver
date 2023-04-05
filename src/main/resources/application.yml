@@ -49,3 +49,8 @@ ffmpeg:
 yt-dlp:
   destination: D:\Temp\yt-dlp\
   cookies-from-browser: vivaldi:D:\Program\Scoop\apps\vivaldi\current\User Data
+
+app:
+  protocol: http
+  host: 127.0.0.1
+  port: 9001

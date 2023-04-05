@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.klaxon.kserver.constants.URLPathConstants;
 import com.klaxon.kserver.converter.WebPageMapperStruct;
 import com.klaxon.kserver.converter.WebPageTaskMapperStruct;
 import com.klaxon.kserver.downloader.DownloadTask;
@@ -34,8 +35,6 @@ import com.klaxon.kserver.util.ThreadLocalHolder;
 public class WebPageTaskServiceImpl extends ServiceImpl<WebPageTaskMapper, WebPageTask>
 		implements WebPageTaskService {
 
-	private static final String IMAGE_PATH_PREFIX = "http://localhost:9001/web-page-task/img/";
-
 	@Resource
 	private WebPageMapper webPageMapper;
 	@Resource
@@ -48,6 +47,8 @@ public class WebPageTaskServiceImpl extends ServiceImpl<WebPageTaskMapper, WebPa
 	private RedisTemplate<String, String> redisTemplate;
 	@Resource
 	private ApplicationContext context;
+	@Resource
+	private URLPathConstants urlPathConstants;
 	@Resource
 	@Qualifier("videoDownloadTaskExecutor")
 	private ThreadPoolTaskExecutor videoDownloadTaskExecutor;
@@ -67,7 +68,7 @@ public class WebPageTaskServiceImpl extends ServiceImpl<WebPageTaskMapper, WebPa
 			WebPageTaskCombineDto webPageTaskCombineDto = new WebPageTaskCombineDto();
 			webPageTaskCombineDto.setWebPageTaskDto(item);
 			webPageTaskCombineDto.setWebPageDto(webPageDto);
-			webPageTaskCombineDto.setThumbnail(IMAGE_PATH_PREFIX + item.getId());
+			webPageTaskCombineDto.setThumbnail(urlPathConstants.getWebPageTaskImgUrl(item.getId()));
 			combineDtos.add(webPageTaskCombineDto);
 		}
 
@@ -118,7 +119,7 @@ public class WebPageTaskServiceImpl extends ServiceImpl<WebPageTaskMapper, WebPa
 		WebPageTaskCombineDto webPageTaskCombineDto = new WebPageTaskCombineDto();
 		webPageTaskCombineDto.setWebPageDto(webPageDto);
 		webPageTaskCombineDto.setWebPageTaskDto(webPageTaskDto);
-		webPageTaskCombineDto.setThumbnail(IMAGE_PATH_PREFIX + webPageTaskDto.getId());
+		webPageTaskCombineDto.setThumbnail(urlPathConstants.getWebPageTaskVideoPath(id));
 		return webPageTaskCombineDto;
 	}
 }
