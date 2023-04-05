@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  ksever:
+    image: kserver:0.0.1
+    container_name: kserver
+    ports:
+      - "9001:9001"
+    restart: always

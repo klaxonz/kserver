@@ -44,12 +44,12 @@ mybatis-plus:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 ffmpeg:
-  path:
+  path: D:\Program\Scoop\apps\ffmpeg\5.1.2\bin\ffmpeg.exe
 
 yt-dlp:
-  destination:
-  cookies-from-browser:
-  cookies-path:
+  destination: D:\Temp\yt-dlp\
+  cookies-from-browser: vivaldi:D:\Program\Scoop\apps\vivaldi\current\User Data
+  cookies-path: D:\Temp\test\www.bilibili.com_cookies.txt
 
 app:
   protocol: http
