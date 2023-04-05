@@ -7,6 +7,7 @@ public class ThreadLocalHolder {
 
 	private static final ThreadLocal<OnlineUser> userThreadLocalHolder = new ThreadLocal<>();
 	private static final ThreadLocal<WebPage> webPageThreadLocalHolder = new ThreadLocal<>();
+
 	private ThreadLocalHolder() {
 	}
 

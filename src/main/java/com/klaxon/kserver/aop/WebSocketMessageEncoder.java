@@ -1,6 +1,5 @@
 package com.klaxon.kserver.aop;
 
-import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
 import javax.websocket.EndpointConfig;
 
@@ -14,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebSocketMessageEncoder implements Encoder.Text<Response> {
 	@Override
-	public String encode(Response message) throws EncodeException {
+	public String encode(Response message) {
 		try {
 			ObjectMapper objectMapper = BaseJacksonUtil.getObjectMapper();
 			return objectMapper.writeValueAsString(message);
