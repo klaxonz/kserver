@@ -17,13 +17,19 @@ import com.klaxon.kserver.converter.WebPageTaskMapperStruct;
 import com.klaxon.kserver.handler.ImageResourceHttpRequestHandler;
 import com.klaxon.kserver.mapper.WebPageTaskMapper;
 import com.klaxon.kserver.mapper.model.WebPageTask;
+import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.service.dto.WebPageTaskDto;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/web-page-task")
 public class WebPageTaskController {
 
+	@Resource
+	private YtDlpProperty ytDlpProperty;
 	@Resource
 	private WebPageTaskMapper webPageTaskMapper;
 	@Resource
@@ -64,7 +70,11 @@ public class WebPageTaskController {
 			HttpServletResponse httpServletResponse) throws IOException {
 
 		WebPageTask task = webPageTaskMapper.selectById(taskId);
-		Path thumbnailPath = Paths.get(task.getThumbnailPath());
+		String path = ytDlpProperty.getDestination() + task.getThumbnailPath();
+		path = path.replace("\\", "/");
+
+		log.info("图片路径: {}", path);
+		Path thumbnailPath = Paths.get(path);
 		httpServletRequest.setAttribute(ImageResourceHttpRequestHandler.ATTRIBUTE_FILE, thumbnailPath.toFile());
 		try {
 			imageResourceHttpRequestHandler.handleRequest(httpServletRequest, httpServletResponse);
@@ -77,7 +87,11 @@ public class WebPageTaskController {
 			HttpServletResponse httpServletResponse) throws IOException {
 
 		WebPageTask task = webPageTaskMapper.selectById(taskId);
-		Path videoPath = Paths.get(task.getFilePath());
+		String path = ytDlpProperty.getDestination() + task.getFilePath();
+		path = path.replace("\\", "/");
+
+		log.info("视频路径: {}", path);
+		Path videoPath = Paths.get(path);
 		httpServletRequest.setAttribute(ImageResourceHttpRequestHandler.ATTRIBUTE_FILE, videoPath.toFile());
 		try {
 			imageResourceHttpRequestHandler.handleRequest(httpServletRequest, httpServletResponse);

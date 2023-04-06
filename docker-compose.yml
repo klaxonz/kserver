@@ -6,4 +6,15 @@ services:
     container_name: kserver
     ports:
       - "9001:9001"
+    environment:
+      - DB_HOST=192.168.31.153
+      - DB_PORT=20002
+      - DB_USERNAME=root
+      - DB_PASSWORD=kserver
+      - DB_NAME=kserver
+      - REDIS_HOST=192.168.31.153
+      - REDIS_PORT=20001
+      - REDIS_PASSWORD=sOmE_sEcUrE_pAsS
+    volumes:
+      - /mnt/d/Temp/yt-dlp:/app/download
     restart: always
