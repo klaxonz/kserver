@@ -10,5 +10,6 @@ import lombok.EqualsAndHashCode;
 public class WebPageVo extends WebPage {
 
 	private String type;
+	private String query;
 
 }

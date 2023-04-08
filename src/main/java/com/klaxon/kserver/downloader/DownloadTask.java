@@ -16,6 +16,9 @@ import com.klaxon.kserver.mapper.model.WebPageTask;
 import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DownloadTask implements Runnable {
@@ -64,9 +67,10 @@ public class DownloadTask implements Runnable {
 			ThreadLocalHolder.setUser(user);
 			YtDlpDownloader downloader = new YtDlpDownloader(ytDlpProperty, task, redisTemplate,
 					new YtDlpDownloadCallbackImpl(webPageTaskMapper, user, task, webPageTaskListServerEndpoint));
+			assert webPage != null;
 			downloader.download(webPage.getUrl());
-		} catch (Exception ignored) {
-			ignored.printStackTrace();
+		} catch (Exception ex) {
+			log.error("download task error", ex);
 		}
 	}
 }

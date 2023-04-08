@@ -1,5 +1,7 @@
 package com.klaxon.kserver.converter;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.klaxon.kserver.bean.BasePage;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -15,5 +17,9 @@ public interface WebPageMapperStruct {
 	WebPageDto entityToDto(WebPage webPage);
 
 	WebPageVo dtoToVo(WebPageDto webPageDto);
+
+	BasePage<WebPageVo> convertVoPage(IPage<WebPageVo> webPageVoIPage);
+
+	BasePage<WebPageDto> convertDtoPage(IPage<WebPageDto> webPageDtoIPage);
 
 }

@@ -14,7 +14,7 @@ public interface WebPageService {
 
 	WebPageDetail countWebPage();
 
-	IPage<WebPageDto> listByPage(WebPageDto webPageDTO, String query);
+	IPage<WebPageDto> listByPage(WebPageDto webPageDTO);
 
 	void deleteWebPage(Long webPageId);
 

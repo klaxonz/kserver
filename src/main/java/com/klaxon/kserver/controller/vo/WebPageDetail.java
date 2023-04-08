@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class WebPageDetail {
 
-	private Long todayTotal;
-	private Long starTotal;
-	private Long allTotal;
+	private Integer all;
+	private Integer star;
+	private Integer today;
 
 }

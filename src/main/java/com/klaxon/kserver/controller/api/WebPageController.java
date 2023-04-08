@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.klaxon.kserver.bean.BasePage;
 import com.klaxon.kserver.bean.Response;
 import com.klaxon.kserver.controller.vo.WebPageDetail;
 import com.klaxon.kserver.controller.vo.WebPageVo;
@@ -24,6 +25,7 @@ public class WebPageController {
 	@Resource
 	private WebPageMapperStruct webPageMapperStruct;
 
+
 	@PostMapping("/create")
 	public Response<Object> create(@RequestBody @Validated WebPageVo webPageVo) {
 		WebPageDto webPageDto = webPageMapperStruct.voToDto(webPageVo);
@@ -36,14 +38,13 @@ public class WebPageController {
 	}
 
 	@PostMapping("/list")
-	public Response<Object> list(@RequestBody WebPageVo webPageVo,
-			@RequestParam(value = "q", required = false) String query) {
+	public Response<Object> list(@RequestBody WebPageVo webPageVo) {
 		WebPageDto webPageDTO = webPageMapperStruct.voToDto(webPageVo);
 		IPage<WebPageVo> webPageVoIPage = webPageService
-				.listByPage(webPageDTO, query)
+				.listByPage(webPageDTO)
 				.convert(item -> webPageMapperStruct.dtoToVo(item));
-
-		return Response.success(webPageVoIPage);
+		BasePage<WebPageVo> basePage = webPageMapperStruct.convertVoPage(webPageVoIPage);
+		return Response.success(basePage);
 	}
 
 	@PostMapping("/delete")

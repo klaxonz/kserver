@@ -50,15 +50,26 @@ public class YtDlpDownloader {
 		baseCommand.add("-N");
 		baseCommand.add(String.valueOf(cores));
 		if (StringUtils.isNotBlank(ytDlpProperty.getCookiesPath())) {
-			baseCommand.add("--cookies");
-			baseCommand.add(ytDlpProperty.getCookiesPath());
-		} else if (StringUtils.isNotBlank(ytDlpProperty.getCookiesFromBrowser())) {
-			baseCommand.add("--cookies-from-browser");
-			baseCommand.add(ytDlpProperty.getCookiesFromBrowser());
+			File file = new File(ytDlpProperty.getCookiesPath());
+			if (file.exists()) {
+				baseCommand.add("--cookies");
+				baseCommand.add(ytDlpProperty.getCookiesPath());
+			}
+		}
+		if (StringUtils.isNotBlank(ytDlpProperty.getCookiesFromBrowser())) {
+			String browserCookiePath = ytDlpProperty.getCookiesFromBrowser();
+			int index = browserCookiePath.indexOf(":");
+			if (index > 0) {
+				browserCookiePath = browserCookiePath.substring(index + 1);
+				File file = new File(browserCookiePath);
+				if (file.exists()) {
+					baseCommand.add("--cookies-from-browser");
+					baseCommand.add(ytDlpProperty.getCookiesFromBrowser());
+				}
+			}
 		}
 
 		this.builder = createProcessBuilder();
-
 		isRetry = task.getId() != null;
 	}
 
@@ -220,6 +231,7 @@ public class YtDlpDownloader {
 			process.waitFor();
 		}
 		if (StringUtils.isNotBlank(thumbnailPath)) {
+			thumbnailPath = thumbnailPath.substring(ytDlpProperty.getDestination().length());
 			callback.onThumbnailSave(thumbnailPath);
 		}
 	}
@@ -250,6 +262,7 @@ public class YtDlpDownloader {
 			process.waitFor();
 		}
 		if (StringUtils.isNotBlank(filepath)) {
+			filepath = filepath.substring(ytDlpProperty.getDestination().length());
 			callback.onFinish(filepath);
 		}
 	}
@@ -261,6 +274,7 @@ public class YtDlpDownloader {
 		Long speed = extractSpeed(map);
 		int percent = extractPercent(downloadedBytes, totalBytes);
 		String filename = (String) map.get("filename");
+		filename = filename.substring(ytDlpProperty.getDestination().length());
 		String type;
 		if (!hasDownloadVideo) {
 			type = "video";
@@ -313,7 +327,7 @@ public class YtDlpDownloader {
 				"-show_streams",
 				"-v", "error",
 				"-print_format", "json",
-				"-i", task.getFilePath());
+				"-i", ytDlpProperty.getDestination() + task.getFilePath());
 
 		processBuilder.redirectErrorStream(true);
 		Process process = processBuilder.start();

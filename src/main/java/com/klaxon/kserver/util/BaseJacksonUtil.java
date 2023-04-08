@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -84,6 +85,7 @@ public class BaseJacksonUtil {
 	public static ObjectMapper getObjectMapper() {
 		Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
 		jackson2ObjectMapperBuilderCustomizer().customize(builder);
-		return builder.build();
+		ObjectMapper objectMapper = builder.build();
+		return objectMapper;
 	}
 }

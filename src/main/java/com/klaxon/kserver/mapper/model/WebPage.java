@@ -24,6 +24,7 @@ public class WebPage extends PageParam {
 	private String isStar;
 	private String favicon;
 	private String description;
+	private Integer isDelete;
 	private LocalDateTime createTime;
 	private LocalDateTime updateTime;
 
