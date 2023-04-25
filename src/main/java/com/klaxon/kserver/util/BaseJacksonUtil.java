@@ -85,7 +85,6 @@ public class BaseJacksonUtil {
 	public static ObjectMapper getObjectMapper() {
 		Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
 		jackson2ObjectMapperBuilderCustomizer().customize(builder);
-		ObjectMapper objectMapper = builder.build();
-		return objectMapper;
+		return builder.build();
 	}
 }

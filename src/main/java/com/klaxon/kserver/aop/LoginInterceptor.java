@@ -6,6 +6,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.klaxon.kserver.constants.RedisKeyPrefixConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -32,7 +33,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 		String token = request.getHeader("authorization");
 		AccountVo accountVo = null;
 		if (StringUtils.isNotBlank(token)) {
-			String key = "account:token:" + token;
+			String key = RedisKeyPrefixConstants.ACCOUNT_TOKEN_PREFIX + token;
 			Object accountObj = redisTemplate.opsForValue().get(key);
 			if (accountObj != null) {
 				accountVo = objectMapper.convertValue(accountObj, AccountVo.class);

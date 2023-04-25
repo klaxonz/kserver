@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.klaxon.kserver.constants.RedisKeyPrefixConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class AccountServiceImpl implements AccountService {
 	@Resource
 	private AccountMapperStruct accountMapperStruct;
 	@Resource
-	private RedisTemplate redisTemplate;
+	private RedisTemplate<String, Object> redisTemplate;
 
 	@Override
 	public void createAccount(AccountDto accountDto) {
@@ -78,7 +79,7 @@ public class AccountServiceImpl implements AccountService {
 		AccountVo accountVo = accountMapperStruct.entityToVo(account);
 
 		String token = UUID.randomUUID().toString().replace("-", "");
-		String key = "account:token:" + token;
+		String key = RedisKeyPrefixConstants.ACCOUNT_TOKEN_PREFIX + token;
 		redisTemplate.opsForValue().set(key, accountVo);
 
 		return token;
@@ -87,7 +88,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public void logout(HttpServletRequest request) {
 		String token = request.getHeader("authorization");
-		String key = "account:token:" + token;
+		String key = RedisKeyPrefixConstants.ACCOUNT_TOKEN_PREFIX + token;
 		redisTemplate.opsForValue().getAndExpire(key, 1, TimeUnit.MICROSECONDS);
 		request.getSession().invalidate();
 	}

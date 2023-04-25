@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.klaxon.kserver.constants.RedisKeyPrefixConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -86,14 +87,14 @@ public class WebPageTaskServiceImpl extends ServiceImpl<WebPageTaskMapper, WebPa
 	@Override
 	public void pause(WebPageTaskDto webPageTaskDto) {
 		WebPageTask task = webPageTaskMapper.selectById(webPageTaskDto.getId());
-		String key = "task:command:" + task.getId();
+		String key = RedisKeyPrefixConstants.TASK_COMMAND_PREFIX + task.getId();
 		redisTemplate.opsForValue().set(key, "pause");
 	}
 
 	@Override
 	public void remove(WebPageTaskDto webPageTaskDto) {
 		WebPageTask task = webPageTaskMapper.selectById(webPageTaskDto.getId());
-		String key = "task:command:" + task.getId();
+		String key = RedisKeyPrefixConstants.TASK_COMMAND_PREFIX + task.getId();
 		redisTemplate.opsForValue().set(key, "pause");
 
 		String thumbnailPath = task.getThumbnailPath();

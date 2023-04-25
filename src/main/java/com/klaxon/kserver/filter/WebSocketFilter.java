@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.klaxon.kserver.constants.RedisKeyPrefixConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -44,7 +45,7 @@ public class WebSocketFilter implements Filter {
 
 		AccountVo accountVo = null;
 		if (StringUtils.isNotBlank(token)) {
-			String key = "account:token:" + token;
+			String key = RedisKeyPrefixConstants.ACCOUNT_TOKEN_PREFIX + token;
 			Map<String, Object> userInfo = (Map<String, Object>) redisTemplate.opsForValue().get(key);
 			if (userInfo != null) {
 				accountVo = objectMapper.convertValue(userInfo, AccountVo.class);
