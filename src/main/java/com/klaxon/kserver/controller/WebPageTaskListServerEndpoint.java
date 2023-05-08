@@ -17,13 +17,16 @@ import com.klaxon.kserver.bean.OnlineUser;
 import com.klaxon.kserver.bean.Response;
 import com.klaxon.kserver.controller.vo.WebPageTaskCombineVo;
 import com.klaxon.kserver.controller.vo.WebPageTaskVo;
+import com.klaxon.kserver.controller.vo.WebPageVideoTaskVo;
 import com.klaxon.kserver.controller.vo.WebPageVo;
 import com.klaxon.kserver.converter.WebPageMapperStruct;
 import com.klaxon.kserver.converter.WebPageTaskMapperStruct;
+import com.klaxon.kserver.converter.WebPageVideoTaskMapperStruct;
 import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.service.dto.WebPageDto;
 import com.klaxon.kserver.service.dto.WebPageTaskCombineDto;
 import com.klaxon.kserver.service.dto.WebPageTaskDto;
+import com.klaxon.kserver.service.dto.WebPageVideoTaskDto;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
 import lombok.NoArgsConstructor;
@@ -44,6 +47,8 @@ public class WebPageTaskListServerEndpoint {
 	private WebPageMapperStruct webPageMapperStruct;
 	@Resource
 	private WebPageTaskMapperStruct webPageTaskMapperStruct;
+	@Resource
+	private WebPageVideoTaskMapperStruct webPageVideoTaskMapperStruct;
 
 	@OnOpen
 	public void onOpen(Session session) {
@@ -100,13 +105,16 @@ public class WebPageTaskListServerEndpoint {
 		for (WebPageTaskCombineDto webPageTaskCombineDto : list) {
 			WebPageDto webPageDto = webPageTaskCombineDto.getWebPageDto();
 			WebPageTaskDto webPageTaskDto = webPageTaskCombineDto.getWebPageTaskDto();
+			List<WebPageVideoTaskDto> webPageVideoTaskDtoList = webPageTaskCombineDto.getWebPageVideoTaskDtoList();
 			WebPageVo webPageVo = webPageMapperStruct.dtoToVo(webPageDto);
 			WebPageTaskVo webPageTaskVo = webPageTaskMapperStruct.dtoToVo(webPageTaskDto);
+			List<WebPageVideoTaskVo> webPageVideoTaskVos = webPageVideoTaskMapperStruct.dtosToVos(webPageVideoTaskDtoList);
 			WebPageTaskCombineVo webPageTaskCombineVo = new WebPageTaskCombineVo();
 			webPageTaskCombineVo.setWebPage(webPageVo);
 			webPageTaskCombineVo.setWebPageTask(webPageTaskVo);
 			webPageTaskCombineVo.setThumbnail(webPageTaskCombineDto.getThumbnail());
 			webPageTaskCombineVos.add(webPageTaskCombineVo);
+			webPageTaskCombineVo.setWebPageVideoTaskList(webPageVideoTaskVos);
 		}
 		try {
 			session.getBasicRemote().sendObject(Response.success(webPageTaskCombineVos));

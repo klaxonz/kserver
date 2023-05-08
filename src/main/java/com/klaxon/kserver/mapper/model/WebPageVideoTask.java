@@ -18,24 +18,39 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "t_web_page_task")
-public class WebPageTask extends PageParam implements Serializable {
+@TableName(value = "t_web_page_video_task")
+public class WebPageVideoTask extends PageParam implements Serializable {
 
 	private static final long serialVersionUID = -8634202805696729427L;
 
 	@TableId(value = "id")
 	private Long id;
+	private Long taskId;
 	private Long userId;
 	private Long webPageId;
 	private Integer videoProgress;
-	private Long videoDownloadedSize;
+	private Integer audioProgress;
+	private Long videoLength;
+	private Long audioLength;
+	private Long videoDownloadedLength;
+	private Long audioDownloadedLength;
+	private String videoPath;
+	private String audioPath;
 	private String filePath;
 	private String thumbnailPath;
 
+	private Long videoDownloadSpeed;
+	private Long audioDownloadSpeed;
+	private Long videoDownloadEta;
+	private Long audioDownloadEta;
 	private Long videoSize;
 	private Integer videoDuration;
+	private Integer isMerge;
+	private Integer width;
+	private Integer height;
+	private Integer videoIndex;
+	private String title;
 	private Integer type;
-	private Integer status;
 
 	private LocalDateTime createTime;
 	private LocalDateTime updateTime;

@@ -1,19 +1,30 @@
 package com.klaxon.kserver.downloader;
 
+import com.klaxon.kserver.mapper.model.WebPageTask;
+import com.klaxon.kserver.mapper.model.WebPageVideoTask;
+
+import java.util.Map;
+
 public interface YtDlpDownloadCallback {
 
-	void onThumbnailSave(String path);
+	void onThumbnailSave(WebPageVideoTask webPageVideoTask, String path);
 
-	void onProgress(YtDlpDownloadProgress progress);
+	void onProgress(WebPageVideoTask webPageVideoTask, YtDlpDownloadProgress progress);
 
-	void onFinish(String filepath);
+	void onFinish(WebPageVideoTask webPageVideoTask, String filepath);
 
-	void onGetDuration(int duration);
+	void onGetDuration(WebPageVideoTask webPageVideoTask, int duration);
 
-	void beforeVideoDownload();
+	WebPageVideoTask beforeVideoDownload(Integer videoTpe, Map<String, Object> videoInfo, String thumbnailPath);
 
-	void onGetSize(long size);
+	void onGetSize(WebPageVideoTask webPageVideoTask, long size);
 
-	void onGetResolution(int width, int height);
+	void onGetResolution(WebPageVideoTask webPageVideoTask, int width, int height);
+
+	void onCreatePlaylistTask(Map<String, Object> videoInfo);
+
+	void updateWebPageTask(WebPageTask task);
+
+	void updateWebPageVideoTask(WebPageVideoTask videoTask);
 
 }

@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 import com.klaxon.kserver.bean.OnlineUser;
 import com.klaxon.kserver.controller.WebPageTaskListServerEndpoint;
 import com.klaxon.kserver.mapper.WebPageTaskMapper;
+import com.klaxon.kserver.mapper.WebPageVideoTaskMapper;
 import com.klaxon.kserver.mapper.model.WebPage;
 import com.klaxon.kserver.mapper.model.WebPageTask;
 import com.klaxon.kserver.property.YtDlpProperty;
+import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +32,15 @@ public class DownloadTask implements Runnable {
 	@Resource
 	private WebPageTaskMapper webPageTaskMapper;
 	@Resource
+	private WebPageVideoTaskMapper webPageVideoTaskMapper;
+	@Resource
 	private YtDlpProperty ytDlpProperty;
 	@Resource
 	private RedisTemplate<String, String> redisTemplate;
 	@Resource
 	private WebPageTaskListServerEndpoint webPageTaskListServerEndpoint;
+	@Resource
+	private WebPageTaskService webPageTaskService;
 
 	// 无参构造函数
 	public DownloadTask() {
@@ -66,7 +72,7 @@ public class DownloadTask implements Runnable {
 		try {
 			ThreadLocalHolder.setUser(user);
 			YtDlpDownloader downloader = new YtDlpDownloader(ytDlpProperty, task, redisTemplate,
-					new YtDlpDownloadCallbackImpl(webPageTaskMapper, user, task, webPageTaskListServerEndpoint));
+					new YtDlpDownloadCallbackImpl(webPageTaskMapper, user, task, webPageTaskService, webPageVideoTaskMapper, webPageTaskListServerEndpoint));
 			assert webPage != null;
 			downloader.download(webPage.getUrl());
 		} catch (Exception ex) {

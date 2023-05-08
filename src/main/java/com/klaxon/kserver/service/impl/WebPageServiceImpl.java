@@ -30,6 +30,7 @@ import com.klaxon.kserver.downloader.DownloadTask;
 import com.klaxon.kserver.mapper.WebPageMapper;
 import com.klaxon.kserver.mapper.model.WebPage;
 import com.klaxon.kserver.mapper.model.WebPageTask;
+import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.WebPageService;
 import com.klaxon.kserver.service.dto.WebPageDto;
 import com.klaxon.kserver.util.ThreadLocalHolder;
@@ -50,10 +51,15 @@ public class WebPageServiceImpl implements WebPageService {
 	@Resource
 	@Qualifier("videoDownloadTaskExecutor")
 	private ThreadPoolTaskExecutor videoDownloadTaskExecutor;
+	@Resource
+	private YtDlpProperty ytDlpProperty;
 
-	public static boolean isYtDlpSupported(String url) {
+	public boolean isYtDlpSupported(String url) {
 		try {
-			ProcessBuilder processBuilder = new ProcessBuilder("yt-dlp", "-F", url);
+			ProcessBuilder processBuilder = new ProcessBuilder(
+					"yt-dlp",
+					"--cookies-from-browser", ytDlpProperty.getCookiesFromBrowser(),
+					"-F", url);
 			Process process = processBuilder.start();
 			InputStream inputStream = process.getInputStream();
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

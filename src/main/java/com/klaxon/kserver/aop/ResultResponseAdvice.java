@@ -2,6 +2,7 @@ package com.klaxon.kserver.aop;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klaxon.kserver.bean.Response;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.exception.BizException;
+
+import java.util.List;
 
 @RestControllerAdvice
 public class ResultResponseAdvice implements ResponseBodyAdvice<Object> {
@@ -41,6 +44,12 @@ public class ResultResponseAdvice implements ResponseBodyAdvice<Object> {
 				return objectMapper.writeValueAsString(result);
 			} catch (JsonProcessingException e) {
 				throw new BizException(BizCodeEnum.COMMON_ERROR, e);
+			}
+		} else if (body instanceof List) {
+			if (((List<?>) body).size() > 0) {
+				if (((List<?>) body).get(0) instanceof ResourceRegion) {
+					return body;
+				}
 			}
 		}
 		return result;

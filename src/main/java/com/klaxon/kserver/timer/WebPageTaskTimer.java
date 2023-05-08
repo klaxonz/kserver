@@ -16,7 +16,7 @@ public class WebPageTaskTimer {
 	@Resource
 	private WebPageTaskListServerEndpoint webPageTaskListServerEndpoint;
 
-	@Scheduled(fixedRate = 200)
+	@Scheduled(fixedRate = 1000)
 	public void sendTaskProgress() {
 		webPageTaskListServerEndpoint.sendMessage();
 	}

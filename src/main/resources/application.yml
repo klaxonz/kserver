@@ -39,7 +39,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-  mapper-locations: src/main/java/com/klaxon/kserver/mapper/xml/*.xml
+    mapper-locations: classpath:mapper/**/*.xml
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
