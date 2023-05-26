@@ -1,6 +1,7 @@
 package com.klaxon.kserver.controller.api;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +31,7 @@ import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.service.dto.WebPageTaskDto;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @Slf4j
 @Controller

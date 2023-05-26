@@ -42,7 +42,6 @@ public class DownloadTask implements Runnable {
 	@Resource
 	private WebPageTaskService webPageTaskService;
 
-	// 无参构造函数
 	public DownloadTask() {
 		this.task = null;
 		this.user = null;

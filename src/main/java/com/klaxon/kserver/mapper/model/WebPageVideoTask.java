@@ -39,10 +39,6 @@ public class WebPageVideoTask extends PageParam implements Serializable {
 	private String filePath;
 	private String thumbnailPath;
 
-	private Long videoDownloadSpeed;
-	private Long audioDownloadSpeed;
-	private Long videoDownloadEta;
-	private Long audioDownloadEta;
 	private Long videoSize;
 	private Integer videoDuration;
 	private Integer isMerge;

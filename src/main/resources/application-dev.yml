@@ -47,8 +47,8 @@ ffmpeg:
   path: D:\Program\Scoop\apps\ffmpeg\5.1.2\bin\ffmpeg.exe
 
 yt-dlp:
-  destination: D:\Temp\yt-dlp\
-  cookies-from-browser: vivaldi:D:\Program\Scoop\apps\vivaldi\current\User Data
+  destination: /Users/kail/Downloads/yt-dlp/
+  cookies-from-browser: vivaldi:/Users/kail/Library/Application Support/Vivaldi/Default
   cookies-path: D:\Temp\test\www.bilibili.com_cookies.txt
 
 app:

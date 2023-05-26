@@ -44,18 +44,14 @@ public class YtDlpDownloadCallbackImpl implements YtDlpDownloadCallback {
 		String type = progress.getType();
 		if (type.equals("video") || type.equals("best")) {
 			webPageVideoTask.setVideoProgress(progress.getPercent());
-			webPageVideoTask.setVideoDownloadEta(progress.getEta());
 			webPageVideoTask.setVideoLength(progress.getTotalBytes());
 			webPageVideoTask.setVideoDownloadedLength(progress.getDownloadedBytes());
-			webPageVideoTask.setVideoDownloadSpeed(progress.getDownloadSpeed());
 			webPageVideoTask.setVideoPath(progress.getFilepath());
 		}
 		if (type.equals("audio")) {
 			webPageVideoTask.setAudioProgress(progress.getPercent());
-			webPageVideoTask.setAudioDownloadEta(progress.getEta());
 			webPageVideoTask.setAudioLength(progress.getTotalBytes());
 			webPageVideoTask.setAudioDownloadedLength(progress.getDownloadedBytes());
-			webPageVideoTask.setAudioDownloadSpeed(progress.getDownloadSpeed());
 			webPageVideoTask.setAudioPath(progress.getFilepath());
 		}
 		webPageVideoTaskMapper.updateById(webPageVideoTask);

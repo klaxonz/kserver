@@ -174,7 +174,6 @@ public class YtDlpDownloader {
 		List<String> command = builder.command();
 		command.clear();
 		command.addAll(baseCommand);
-//		int cores = Runtime.getRuntime().availableProcessors() / 2;
 		command.add("-N");
 		command.add(String.valueOf(4));
 		command.add("-f");
@@ -364,6 +363,13 @@ public class YtDlpDownloader {
 				while ((line = bufferedReader.readLine()) != null) {
 					checkExit();
 					if (line.contains("downloading")) {
+						// 去除字符串开头的引号
+						if (line.startsWith("\"")) {
+							line = line.substring(1);
+						}
+						if (line.endsWith("\"")) {
+							line = line.substring(0, line.length() - 1);
+						}
 						HashMap<String, Object> hashMap = JSONUtil.toBean(line, HashMap.class);
 						YtDlpDownloadProgress progress = extractProgress(hashMap, type);
 						setProgressCache(webPageVideoTask, progress);
