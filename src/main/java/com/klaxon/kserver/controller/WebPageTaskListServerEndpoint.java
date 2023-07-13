@@ -8,6 +8,8 @@ import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
@@ -29,14 +31,12 @@ import com.klaxon.kserver.service.dto.WebPageTaskDto;
 import com.klaxon.kserver.service.dto.WebPageVideoTaskDto;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@NoArgsConstructor
 @Component
 @ServerEndpoint(value = "/ws/task/list", configurator = CustomSpringConfigurator.class, encoders = WebSocketMessageEncoder.class)
 public class WebPageTaskListServerEndpoint {
+
+	private final Logger log = LoggerFactory.getLogger(WebPageTaskListServerEndpoint.class);
 
 	private final ConcurrentHashMap<Long, OnlineUser> userMap = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<Long, Session> sessionMap = new ConcurrentHashMap<>();

@@ -3,6 +3,8 @@ package com.klaxon.kserver.downloader;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,12 +20,11 @@ import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DownloadTask implements Runnable {
+
+	private final Logger log = LoggerFactory.getLogger(DownloadTask.class);
 
 	private final WebPageTask task;
 	private final WebPage webPage;

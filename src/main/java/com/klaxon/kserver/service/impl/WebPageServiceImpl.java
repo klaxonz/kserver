@@ -9,11 +9,13 @@ import java.util.Objects;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -36,11 +38,11 @@ import com.klaxon.kserver.service.dto.WebPageDto;
 import com.klaxon.kserver.util.ThreadLocalHolder;
 
 import cn.hutool.core.net.url.UrlBuilder;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class WebPageServiceImpl implements WebPageService {
+
+	private final Logger log = LoggerFactory.getLogger(WebPageServiceImpl.class);
 
 	@Resource
 	private WebPageMapper webPageMapper;

@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,13 +32,12 @@ import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.service.dto.WebPageTaskDto;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-@Slf4j
 @Controller
 @RequestMapping("/web-page-task")
 public class WebPageTaskController {
+
+	private final Logger log = LoggerFactory.getLogger(WebPageTaskController.class);
 
 	@Resource
 	private YtDlpProperty ytDlpProperty;

@@ -4,7 +4,8 @@ import com.klaxon.kserver.bean.Response;
 import com.klaxon.kserver.mapper.VideoMapper;
 import com.klaxon.kserver.mapper.model.Video;
 import com.klaxon.kserver.property.VideoProperty;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,10 +16,11 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 
-@Slf4j
 @RestController
 @RequestMapping("/video")
 public class VideoController {
+
+    private final Logger log = LoggerFactory.getLogger(VideoController.class);
 
     @Resource
     private VideoProperty videoProperty;

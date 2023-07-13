@@ -1,8 +1,6 @@
 package com.klaxon.kserver.downloader;
 
-import lombok.Data;
 
-@Data
 public class YtDlpDownloadProgress {
 
 	public final String type;
@@ -34,4 +32,31 @@ public class YtDlpDownloadProgress {
 		this.filepath = filepath;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public int getPercent() {
+		return percent;
+	}
+
+	public long getDownloadedBytes() {
+		return downloadedBytes;
+	}
+
+	public long getTotalBytes() {
+		return totalBytes;
+	}
+
+	public long getDownloadSpeed() {
+		return downloadSpeed;
+	}
+
+	public long getEta() {
+		return eta;
+	}
+
+	public String getFilepath() {
+		return filepath;
+	}
 }

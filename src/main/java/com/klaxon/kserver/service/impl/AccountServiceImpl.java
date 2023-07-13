@@ -23,10 +23,8 @@ import com.klaxon.kserver.service.AccountService;
 import com.klaxon.kserver.service.dto.AccountDto;
 
 import cn.hutool.crypto.digest.MD5;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class AccountServiceImpl implements AccountService {
 
 	@Resource
@@ -38,6 +36,11 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public void createAccount(AccountDto accountDto) {
+
+		String username = accountDto.getUsername();
+		if (Objects.isNull(username)) {
+			throw new BizException(BizCodeEnum.ACCOUNT_0030005);
+		}
 
 		// 用户名重复校验
 		Account usernameAccount = accountMapper.selectOne(
@@ -57,9 +60,9 @@ public class AccountServiceImpl implements AccountService {
 		String digestHex = md5.digestHex(accountDto.getPassword());
 
 		Account account = new Account();
-		account.setUsername(account.getUsername());
+		account.setUsername(accountDto.getUsername());
 		account.setPassword(digestHex);
-		account.setEmail(account.getEmail());
+		account.setEmail(accountDto.getEmail());
 		accountMapper.insert(account);
 	}
 

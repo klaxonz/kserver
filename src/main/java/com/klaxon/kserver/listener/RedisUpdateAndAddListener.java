@@ -5,12 +5,13 @@ import java.math.RoundingMode;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,13 +22,12 @@ import com.klaxon.kserver.mapper.model.WebPageTask;
 import com.klaxon.kserver.mapper.model.WebPageVideoTask;
 
 import cn.hutool.core.util.RandomUtil;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
 @Component
-@Data
 public class RedisUpdateAndAddListener implements MessageListener {
+
+    private final Logger log = LoggerFactory.getLogger(RedisUpdateAndAddListener.class);
 
     // 监听的主题
     private  final PatternTopic topic = new PatternTopic("__keyevent@*__:set");
@@ -40,6 +40,42 @@ public class RedisUpdateAndAddListener implements MessageListener {
     private WebPageTaskMapper webPageTaskMapper;
     @Resource
     private WebPageVideoTaskMapper webPageVideoTaskMapper;
+
+    public PatternTopic getTopic() {
+        return topic;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public RedisTemplate<String, String> getRedisTemplate() {
+        return redisTemplate;
+    }
+
+    public void setRedisTemplate(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public WebPageTaskMapper getWebPageTaskMapper() {
+        return webPageTaskMapper;
+    }
+
+    public void setWebPageTaskMapper(WebPageTaskMapper webPageTaskMapper) {
+        this.webPageTaskMapper = webPageTaskMapper;
+    }
+
+    public WebPageVideoTaskMapper getWebPageVideoTaskMapper() {
+        return webPageVideoTaskMapper;
+    }
+
+    public void setWebPageVideoTaskMapper(WebPageVideoTaskMapper webPageVideoTaskMapper) {
+        this.webPageVideoTaskMapper = webPageVideoTaskMapper;
+    }
 
     @Override
     public void onMessage(Message message, byte[] pattern){

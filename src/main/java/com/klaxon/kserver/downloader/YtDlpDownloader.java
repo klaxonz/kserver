@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.klaxon.kserver.mapper.model.WebPageTask;
@@ -24,10 +26,10 @@ import com.klaxon.kserver.property.YtDlpProperty;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class YtDlpDownloader {
+
+	private final Logger log = LoggerFactory.getLogger(YtDlpDownloader.class);
 
 	private final YtDlpProperty ytDlpProperty;
 	private final YtDlpDownloadCallback callback;
@@ -37,7 +39,6 @@ public class YtDlpDownloader {
 	private final boolean isRetry;
 	List<String> baseCommand = new ArrayList<>();
 	private String basePath;
-	private boolean isMerge = false;
 	private Process process;
 	private WebPageVideoTask webPageVideoTask;
 

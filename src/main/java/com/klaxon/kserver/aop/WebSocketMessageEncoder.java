@@ -7,11 +7,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.klaxon.kserver.bean.Response;
 import com.klaxon.kserver.util.BaseJacksonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class WebSocketMessageEncoder implements Encoder.Text<Response> {
+
+	private final Logger log = LoggerFactory.getLogger(WebSocketMessageEncoder.class);
+
 	@Override
 	public String encode(Response message) {
 		try {

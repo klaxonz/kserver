@@ -1,8 +1,6 @@
 package com.klaxon.kserver.exception;
 
-import lombok.Getter;
 
-@Getter
 public class BizException extends RuntimeException {
 
 	private static final long serialVersionUID = -109589250839197760L;
@@ -32,5 +30,13 @@ public class BizException extends RuntimeException {
 		super(bizCodeEnum.getDesc(), cause);
 		this.code = bizCodeEnum.getCode();
 		this.desc = bizCodeEnum.getDesc();
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public String getDesc() {
+		return desc;
 	}
 }
