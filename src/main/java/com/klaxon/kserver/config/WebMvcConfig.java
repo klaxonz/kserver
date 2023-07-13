@@ -42,6 +42,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		pathPatterns.add("/web-page-task/img/*");
 		pathPatterns.add("/web-page-task/video/**");
 		pathPatterns.add("/web-page-task/video/*");
+		pathPatterns.add("/video/upload");
 		registry.addInterceptor(getInterceptor()).excludePathPatterns(pathPatterns);
 	}
 

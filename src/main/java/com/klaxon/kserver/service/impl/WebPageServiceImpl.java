@@ -89,6 +89,7 @@ public class WebPageServiceImpl implements WebPageService {
 		String url = webPageDTO.getUrl();
 		Document document = null;
 		String title = Strings.EMPTY;
+		String content = Strings.EMPTY;
 		String description = Strings.EMPTY;
 		try {
 			document = Jsoup.connect(url).get();
@@ -103,6 +104,7 @@ public class WebPageServiceImpl implements WebPageService {
 			if (!elements.isEmpty()) {
 				description = elements.get(0).attr("content");
 			}
+			content = document.body().text();
 		}
 		UrlBuilder urlBuilder = UrlBuilder.of(url);
 		String source = String.join("://", urlBuilder.getScheme(), urlBuilder.getHost());
@@ -112,6 +114,7 @@ public class WebPageServiceImpl implements WebPageService {
 		webPage.setUrl(url);
 		webPage.setIsStar("0");
 		webPage.setTitle(title);
+		webPage.setContent(content);
 		webPage.setSource(source);
 		webPage.setFavicon(WebPageConstants.FAVICON_BASE_URL + url);
 		webPage.setDescription(description);
@@ -192,7 +195,10 @@ public class WebPageServiceImpl implements WebPageService {
 		if (StringUtils.isNotBlank(webPageDto.getQuery())) {
 			lambdaQueryWrapper.and(webPageLambdaQueryWrapper -> webPageLambdaQueryWrapper.like(WebPage::getTitle, webPageDto.getQuery())
 					.or()
-					.like(WebPage::getDescription, webPageDto.getQuery()));
+					.like(WebPage::getDescription, webPageDto.getQuery())
+					.or()
+					.like(WebPage::getContent, webPageDto.getQuery())
+			);
 		}
 		BasePage<WebPage> webPageIPage = webPageMapper.selectPage(searchPage, lambdaQueryWrapper);
 		return webPageIPage.convert(item -> webPageMapperStruct.entityToDto(item));

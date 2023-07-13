@@ -20,6 +20,7 @@ public class WebPage extends PageParam {
 	private Long userId;
 	private String url;
 	private String title;
+	private String content;
 	private String source;
 	private String isStar;
 	private String favicon;
