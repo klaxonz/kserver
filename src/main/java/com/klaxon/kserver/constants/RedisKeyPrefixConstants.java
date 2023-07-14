@@ -2,9 +2,7 @@ package com.klaxon.kserver.constants;
 
 public class RedisKeyPrefixConstants {
 
-    private RedisKeyPrefixConstants() {
-
-    }
+    private RedisKeyPrefixConstants() {}
 
     public static final String ACCOUNT_TOKEN_PREFIX = "account:token:";
 

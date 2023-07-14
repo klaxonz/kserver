@@ -3,31 +3,27 @@ package com.klaxon.kserver.controller.vo;
 
 public class WebPageDetail {
 
-	private Integer all;
-	private Integer star;
-	private Integer today;
+	private Integer type;
+	private Integer count;
 
-	public Integer getAll() {
-		return all;
+	public WebPageDetail(Integer type, Integer count) {
+		this.type = type;
+		this.count = count;
 	}
 
-	public void setAll(Integer all) {
-		this.all = all;
+	public Integer getType() {
+		return type;
 	}
 
-	public Integer getStar() {
-		return star;
+	public void setType(Integer type) {
+		this.type = type;
 	}
 
-	public void setStar(Integer star) {
-		this.star = star;
+	public Integer getCount() {
+		return count;
 	}
 
-	public Integer getToday() {
-		return today;
-	}
-
-	public void setToday(Integer today) {
-		this.today = today;
+	public void setCount(Integer count) {
+		this.count = count;
 	}
 }

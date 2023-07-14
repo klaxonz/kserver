@@ -12,7 +12,7 @@ public interface WebPageService {
 
 	WebPageDto getWebPage(Long webPageId);
 
-	WebPageDetail countWebPage();
+	List<WebPageDetail> countWebPage();
 
 	IPage<WebPageDto> listByPage(WebPageDto webPageDTO);
 

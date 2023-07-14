@@ -17,7 +17,7 @@ public class WebPage extends PageParam {
 	private String title;
 	private String content;
 	private String source;
-	private String isStar;
+	private Integer isStar;
 	private String favicon;
 	private String description;
 	private Integer isDelete;
@@ -72,11 +72,11 @@ public class WebPage extends PageParam {
 		this.source = source;
 	}
 
-	public String getIsStar() {
+	public Integer getIsStar() {
 		return isStar;
 	}
 
-	public void setIsStar(String isStar) {
+	public void setIsStar(Integer isStar) {
 		this.isStar = isStar;
 	}
 

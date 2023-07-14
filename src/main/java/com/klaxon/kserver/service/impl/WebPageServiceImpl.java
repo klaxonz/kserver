@@ -9,6 +9,8 @@ import java.util.Objects;
 
 import javax.annotation.Resource;
 
+import com.google.common.collect.Lists;
+import com.klaxon.kserver.constants.CommonConstants;
 import org.slf4j.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -114,7 +116,7 @@ public class WebPageServiceImpl implements WebPageService {
 		WebPage webPage = new WebPage();
 		webPage.setUserId(ThreadLocalHolder.getUser().getId());
 		webPage.setUrl(url);
-		webPage.setIsStar("0");
+		webPage.setIsStar(CommonConstants.NO);
 		webPage.setTitle(title);
 		webPage.setContent(content);
 		webPage.setSource(source);
@@ -124,7 +126,8 @@ public class WebPageServiceImpl implements WebPageService {
 
 		boolean isSupported = isYtDlpSupported(url);
 		if (isSupported) {
-			DownloadTask downloadTask = context.getBean(DownloadTask.class, ThreadLocalHolder.getUser(),
+			DownloadTask downloadTask = context.getBean(DownloadTask.class,
+					ThreadLocalHolder.getUser(),
 					new WebPageTask(),
 					webPage);
 			videoDownloadTaskExecutor.submit(downloadTask);
@@ -136,46 +139,46 @@ public class WebPageServiceImpl implements WebPageService {
 	@Override
 	public WebPageDto getWebPage(Long id) {
 		WebPage webPage = webPageMapper.selectOne(new LambdaQueryWrapper<WebPage>()
-				.eq(WebPage::getIsDelete, 0)
+				.eq(WebPage::getIsDelete, CommonConstants.NO)
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
 				.eq(WebPage::getId, id));
 		return webPageMapperStruct.entityToDto(webPage);
 	}
 
 	@Override
-	public WebPageDetail countWebPage() {
+	public List<WebPageDetail> countWebPage() {
+		List<WebPageDetail> webPageDetailList = Lists.newLinkedList();
+
 		// all count
 		LambdaQueryWrapper<WebPage> allQueryWrapper = new LambdaQueryWrapper<>();
 		allQueryWrapper
-				.eq(WebPage::getIsDelete, 0)
+				.eq(WebPage::getIsDelete, CommonConstants.NO)
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
 				.orderByDesc(WebPage::getCreateTime);
 		Integer allTotal = Math.toIntExact(webPageMapper.selectCount(allQueryWrapper));
+		webPageDetailList.add(new WebPageDetail(WebPageConstants.WEB_PAGE_TYPE_ALL, allTotal));
 
 		// star count
 		LambdaQueryWrapper<WebPage> starQueryWrapper = new LambdaQueryWrapper<>();
 		starQueryWrapper
-				.eq(WebPage::getIsDelete, 0)
+				.eq(WebPage::getIsDelete, CommonConstants.NO)
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
-				.eq(WebPage::getIsStar, "1")
+				.eq(WebPage::getIsStar, CommonConstants.YES)
 				.orderByDesc(WebPage::getCreateTime);
 		Integer starTotal = Math.toIntExact(webPageMapper.selectCount(starQueryWrapper));
+		webPageDetailList.add(new WebPageDetail(WebPageConstants.WEB_PAGE_TYPE_STAR, starTotal));
 
 		// today count
 		LambdaQueryWrapper<WebPage> todayQueryWrapper = new LambdaQueryWrapper<>();
 		todayQueryWrapper
-				.eq(WebPage::getIsDelete, 0)
+				.eq(WebPage::getIsDelete, CommonConstants.NO)
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
 				.apply("to_days(create_time) = to_days(now())")
 				.orderByDesc(WebPage::getCreateTime);
 		Integer todayTotal = Math.toIntExact(webPageMapper.selectCount(todayQueryWrapper));
+		webPageDetailList.add(new WebPageDetail(WebPageConstants.WEB_PAGE_TYPE_TODAY, todayTotal));
 
-		WebPageDetail webPageDetail = new WebPageDetail();
-		webPageDetail.setAll(allTotal);
-		webPageDetail.setStar(starTotal);
-		webPageDetail.setToday(todayTotal);
-
-		return webPageDetail;
+		return webPageDetailList;
 	}
 
 	@Override
@@ -183,14 +186,14 @@ public class WebPageServiceImpl implements WebPageService {
 		BasePage<WebPage> searchPage = new BasePage<>(webPageDto.getPage(), webPageDto.getPageSize());
 		LambdaQueryWrapper<WebPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 		lambdaQueryWrapper
-				.eq(WebPage::getIsDelete, 0)
+				.eq(WebPage::getIsDelete, CommonConstants.NO)
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
 				.orderByDesc(WebPage::getCreateTime);
 
-		if (StringUtils.equals(webPageDto.getType(), "star")) {
-			lambdaQueryWrapper.eq(WebPage::getIsStar, "1");
+		if (Objects.equals(webPageDto.getType(), WebPageConstants.WEB_PAGE_TYPE_STAR)) {
+			lambdaQueryWrapper.eq(WebPage::getIsStar, CommonConstants.YES);
 		}
-		if (StringUtils.equals(webPageDto.getType(), "today")) {
+		if (Objects.equals(webPageDto.getType(), WebPageConstants.WEB_PAGE_TYPE_TODAY)) {
 			lambdaQueryWrapper.apply("to_days(create_time) = to_days(now())");
 		}
 
@@ -213,7 +216,7 @@ public class WebPageServiceImpl implements WebPageService {
 				.eq(WebPage::getId, webPageId);
 		WebPage webPage = new WebPage();
 		webPage.setId(webPageId);
-		webPage.setIsDelete(1);
+		webPage.setIsDelete(CommonConstants.YES);
 		webPageMapper.update(webPage, queryWrapper);
 	}
 
@@ -223,7 +226,7 @@ public class WebPageServiceImpl implements WebPageService {
 				.eq(WebPage::getUserId, ThreadLocalHolder.getUser().getId())
 				.in(WebPage::getId, webPageIds);
 		WebPage webPage = new WebPage();
-		webPage.setIsDelete(1);
+		webPage.setIsDelete(CommonConstants.YES);
 		webPageMapper.update(webPage, queryWrapper);
 	}
 }

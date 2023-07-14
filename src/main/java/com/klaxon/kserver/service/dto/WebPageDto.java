@@ -4,14 +4,14 @@ import com.klaxon.kserver.mapper.model.WebPage;
 
 public class WebPageDto extends WebPage {
 
-	private String type;
+	private Integer type;
 	private String query;
 
-	public String getType() {
+	public Integer getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(Integer type) {
 		this.type = type;
 	}
 

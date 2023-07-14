@@ -33,7 +33,7 @@ public class WebPageController {
 	}
 
 	@GetMapping("/count")
-	public WebPageDetail count() {
+	public List<WebPageDetail> count() {
 		return webPageService.countWebPage();
 	}
 

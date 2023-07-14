@@ -51,7 +51,7 @@ CREATE TABLE `t_web_page`  (
   `user_id` bigint NOT NULL COMMENT '用户 ID',
   `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '链接',
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '标题',
-  `is_star` tinyint NOT NULL COMMENT '是否星标 0-否 1-是',
+  `is_star` tinyint NOT NULL default 0 COMMENT '是否星标 0-否 1-是',
   `is_delete` tinyint NOT NULL DEFAULT 0 COMMENT '是否删除 0-否 1-是',
   `content` text NOT NULL COMMENT '网页内容',
   `source` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '来源',
