@@ -356,7 +356,7 @@ public class YtDlpDownloader {
 		}
 
 		@Override
-		public String call() throws Exception {
+		public String call() {
 			String filepath = null;
 			try {
 				String line;
