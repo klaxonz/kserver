@@ -1,11 +1,11 @@
 package com.klaxon.kserver.mapper.model;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.klaxon.kserver.bean.PageParam;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 网页视频存储任务表
@@ -25,7 +25,6 @@ public class WebPageTask extends PageParam implements Serializable {
 	private Integer videoProgress;
 	private Long videoDownloadedSize;
 	private String filePath;
-	private String thumbnailPath;
 
 	private Long videoSize;
 	private Integer videoDuration;
@@ -83,13 +82,6 @@ public class WebPageTask extends PageParam implements Serializable {
 		this.filePath = filePath;
 	}
 
-	public String getThumbnailPath() {
-		return thumbnailPath;
-	}
-
-	public void setThumbnailPath(String thumbnailPath) {
-		this.thumbnailPath = thumbnailPath;
-	}
 
 	public Long getVideoSize() {
 		return videoSize;

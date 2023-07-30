@@ -1,28 +1,12 @@
 package com.klaxon.kserver.controller.api;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
-
-import javax.annotation.Resource;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.klaxon.kserver.bean.Response;
+import com.klaxon.kserver.constants.WebPageTaskConstants;
 import com.klaxon.kserver.controller.vo.WebPageTaskVo;
 import com.klaxon.kserver.converter.WebPageTaskMapperStruct;
+import com.klaxon.kserver.exception.BizCodeEnum;
+import com.klaxon.kserver.exception.BizException;
 import com.klaxon.kserver.handler.ImageResourceHttpRequestHandler;
 import com.klaxon.kserver.mapper.WebPageTaskMapper;
 import com.klaxon.kserver.mapper.WebPageVideoTaskMapper;
@@ -31,6 +15,19 @@ import com.klaxon.kserver.mapper.model.WebPageVideoTask;
 import com.klaxon.kserver.property.YtDlpProperty;
 import com.klaxon.kserver.service.WebPageTaskService;
 import com.klaxon.kserver.service.dto.WebPageTaskDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 
 @Controller
@@ -86,17 +83,15 @@ public class WebPageTaskController {
 	public void getImage(@PathVariable Long taskId, HttpServletRequest httpServletRequest,
 						 HttpServletResponse httpServletResponse) throws IOException {
 
-		WebPageTask task = webPageTaskMapper.selectById(taskId);
-		String thumbnailPath = task.getThumbnailPath();
-		if (StringUtils.isBlank(thumbnailPath)) {
-			LambdaQueryWrapper<WebPageVideoTask> queryWrapper = new LambdaQueryWrapper<>();
-			queryWrapper.eq(WebPageVideoTask::getTaskId, task.getId())
-					.eq(WebPageVideoTask::getVideoIndex, 1);
-			WebPageVideoTask webPageVideoTask = webPageVideoTaskMapper.selectOne(queryWrapper);
-			if (!Objects.isNull(webPageVideoTask)) {
-				thumbnailPath = webPageVideoTask.getThumbnailPath();
-			}
+
+		LambdaQueryWrapper<WebPageVideoTask> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(WebPageVideoTask::getTaskId, taskId)
+				.eq(WebPageVideoTask::getVideoIndex, 1);
+		WebPageVideoTask webPageVideoTask = webPageVideoTaskMapper.selectOne(queryWrapper);
+		if (Objects.isNull(webPageVideoTask)) {
+			throw new BizException(BizCodeEnum.RESOURCE_NOT_EXIST);
 		}
+		String thumbnailPath = webPageVideoTask.getThumbnailPath();
 		thumbnailPath = ytDlpProperty.getDestination() + thumbnailPath;
 		thumbnailPath = thumbnailPath.replace("\\", "/");
 
@@ -121,16 +116,20 @@ public class WebPageTaskController {
 
 		WebPageTask task = webPageTaskMapper.selectById(taskId);
 		String path = "";
-		if (task.getType() == 0) {
+		if (task.getType().equals( WebPageTaskConstants.VIDEO_TYPE_SINGLE)) {
 			LambdaQueryWrapper<WebPageVideoTask> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(WebPageVideoTask::getTaskId, task.getId());
 			WebPageVideoTask webPageVideoTask = webPageVideoTaskMapper.selectOne(queryWrapper);
 			path = ytDlpProperty.getDestination() + webPageVideoTask.getFilePath();
 		}
-		if (task.getType() == 1) {
+		if (task.getType().equals(WebPageTaskConstants.VIDEO_TYPE_PLAYLIST)) {
 			LambdaQueryWrapper<WebPageVideoTask> queryWrapper = new LambdaQueryWrapper<>();
-			queryWrapper.eq(WebPageVideoTask::getTaskId, task.getId())
-					.eq(WebPageVideoTask::getId, videoId);
+			queryWrapper.eq(WebPageVideoTask::getTaskId, task.getId());
+			if (!Objects.isNull(videoId)) {
+				queryWrapper.eq(WebPageVideoTask::getId, videoId);
+			} else {
+				queryWrapper.eq(WebPageVideoTask::getVideoIndex, 1);
+			}
 			WebPageVideoTask webPageVideoTask = webPageVideoTaskMapper.selectOne(queryWrapper);
 			path = ytDlpProperty.getDestination() + webPageVideoTask.getFilePath();
 		}
