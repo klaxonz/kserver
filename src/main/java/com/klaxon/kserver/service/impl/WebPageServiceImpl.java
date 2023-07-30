@@ -1,45 +1,40 @@
 package com.klaxon.kserver.service.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Resource;
-
+import cn.hutool.core.net.url.UrlBuilder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
+import com.klaxon.kserver.bean.BasePage;
 import com.klaxon.kserver.constants.CommonConstants;
-import org.slf4j.Logger;
+import com.klaxon.kserver.constants.WebPageConstants;
+import com.klaxon.kserver.controller.vo.WebPageDetail;
+import com.klaxon.kserver.converter.WebPageMapperStruct;
+import com.klaxon.kserver.downloader.Config;
+import com.klaxon.kserver.downloader.DownloadCallback;
+import com.klaxon.kserver.downloader.DownloadTask;
+import com.klaxon.kserver.downloader.YtDlpExecutorNew;
+import com.klaxon.kserver.mapper.WebPageMapper;
+import com.klaxon.kserver.mapper.model.WebPage;
+import com.klaxon.kserver.property.YtDlpProperty;
+import com.klaxon.kserver.service.WebPageService;
+import com.klaxon.kserver.service.dto.WebPageDto;
+import com.klaxon.kserver.util.ThreadLocalHolder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.klaxon.kserver.bean.BasePage;
-import com.klaxon.kserver.constants.WebPageConstants;
-import com.klaxon.kserver.controller.vo.WebPageDetail;
-import com.klaxon.kserver.converter.WebPageMapperStruct;
-import com.klaxon.kserver.downloader.DownloadTask;
-import com.klaxon.kserver.mapper.WebPageMapper;
-import com.klaxon.kserver.mapper.model.WebPage;
-import com.klaxon.kserver.mapper.model.WebPageTask;
-import com.klaxon.kserver.property.YtDlpProperty;
-import com.klaxon.kserver.service.WebPageService;
-import com.klaxon.kserver.service.dto.WebPageDto;
-import com.klaxon.kserver.util.ThreadLocalHolder;
-
-import cn.hutool.core.net.url.UrlBuilder;
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class WebPageServiceImpl implements WebPageService {
@@ -47,54 +42,48 @@ public class WebPageServiceImpl implements WebPageService {
 	private final Logger log = LoggerFactory.getLogger(WebPageServiceImpl.class);
 
 	@Resource
+	private Config config;
+	@Resource
+	private YtDlpProperty property;
+	@Resource
+	private DownloadCallback callback;
+
+	@Resource
 	private WebPageMapper webPageMapper;
 	@Resource
 	private WebPageMapperStruct webPageMapperStruct;
-	@Resource
-	private ApplicationContext context;
+
 	@Resource
 	@Qualifier("videoDownloadTaskExecutor")
 	private ThreadPoolTaskExecutor videoDownloadTaskExecutor;
-	@Resource
-	private YtDlpProperty ytDlpProperty;
 
-	public boolean isYtDlpSupported(String url) {
-		try {
-			ProcessBuilder processBuilder = new ProcessBuilder(
-					"yt-dlp",
-					"--cookies-from-browser", ytDlpProperty.getCookiesFromBrowser(),
-					"-F", url);
-			Process process = processBuilder.start();
-			InputStream inputStream = process.getInputStream();
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-			String line;
-			boolean showSeparator = false;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.contains("---------------")) {
-					showSeparator = true;
-				} else {
-					if (showSeparator) {
-						return true;
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
 
 	@Override
 	@Transactional
 	public WebPageDto createWebPage(WebPageDto webPageDTO) {
 
-		String url = webPageDTO.getUrl();
+		WebPage webPage = parseWebPage(webPageDTO.getUrl());
+		webPageMapper.insert(webPage);
+
+		config.setProperty(property);
+		YtDlpExecutorNew executor = new YtDlpExecutorNew(config);
+		boolean isSupported = executor.isSupported(webPageDTO.getUrl());
+		if (isSupported) {
+			DownloadTask downloadTask = new DownloadTask(ThreadLocalHolder.getUser(), config, webPage, callback);
+			videoDownloadTaskExecutor.submit(downloadTask);
+		}
+
+		return webPageMapperStruct.entityToDto(webPage);
+	}
+
+
+	private WebPage parseWebPage(String url) {
+
 		Document document = null;
 		String title = Strings.EMPTY;
 		String content = Strings.EMPTY;
 		String description = Strings.EMPTY;
+
 		try {
 			document = Jsoup.connect(url).get();
 		} catch (IOException e) {
@@ -110,6 +99,7 @@ public class WebPageServiceImpl implements WebPageService {
 			}
 			content = document.body().text();
 		}
+
 		UrlBuilder urlBuilder = UrlBuilder.of(url);
 		String source = String.join("://", urlBuilder.getScheme(), urlBuilder.getHost());
 
@@ -122,18 +112,8 @@ public class WebPageServiceImpl implements WebPageService {
 		webPage.setSource(source);
 		webPage.setFavicon(WebPageConstants.FAVICON_BASE_URL + url);
 		webPage.setDescription(description);
-		webPageMapper.insert(webPage);
 
-		boolean isSupported = isYtDlpSupported(url);
-		if (isSupported) {
-			DownloadTask downloadTask = context.getBean(DownloadTask.class,
-					ThreadLocalHolder.getUser(),
-					new WebPageTask(),
-					webPage);
-			videoDownloadTaskExecutor.submit(downloadTask);
-		}
-
-		return webPageMapperStruct.entityToDto(webPage);
+		return webPage;
 	}
 
 	@Override

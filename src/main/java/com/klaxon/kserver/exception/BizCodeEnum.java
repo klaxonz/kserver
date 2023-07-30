@@ -12,6 +12,7 @@ public enum BizCodeEnum {
 	COMMON_SUCCESS("0000000", "成功"),
 	COMMON_ARGUMENT_ERROR("0000001", "参数异常"),
 	COMMON_HTTP_METHOD_NOT_SUPPORT("0000002", "接口资源不存在"),
+	RESOURCE_NOT_EXIST("0000003", "资源不存在"),
 	COMMON_ERROR("0009999", "系统未知异常，请稍后再试"),
 	WEBPAGE_0010001("0010001", "资源不存在"),
 	GROUP_0020001("0020001", "分组名称不能为空"),
