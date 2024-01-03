@@ -8,5 +8,5 @@ COPY build/libs/*.jar app.jar
 
 VOLUME /app/download/
 
-EXPOSE 9001
+EXPOSE 9090
 ENTRYPOINT ["java","-jar","/app.jar"]
