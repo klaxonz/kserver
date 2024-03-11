@@ -1,10 +1,9 @@
 package com.klaxon.kserver.bean;
 
-import java.util.Date;
-
+import com.klaxon.kserver.exception.BizCodeEnum;
 import org.apache.logging.log4j.util.Strings;
 
-import com.klaxon.kserver.exception.BizCodeEnum;
+import java.util.Date;
 
 public class Response<T> {
 
