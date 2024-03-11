@@ -1,20 +1,19 @@
 package com.klaxon.kserver.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Resource;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.klaxon.kserver.aop.LoginInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.klaxon.kserver.aop.LoginInterceptor;
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -37,13 +36,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		List<String> pathPatterns = new ArrayList<>();
-		pathPatterns.add("/account/login");
-		pathPatterns.add("/account/register");
-		pathPatterns.add("/web-page-task/img/*");
-		pathPatterns.add("/web-page-task/video/**");
-		pathPatterns.add("/web-page-task/video/*");
-		pathPatterns.add("/video/upload");
+		pathPatterns.add("/doc.html");
+		pathPatterns.add("doc.html");
+		pathPatterns.add("/webjars/**");
+		pathPatterns.add("/swagger-resources");
+		pathPatterns.add("/error");
 		registry.addInterceptor(getInterceptor()).excludePathPatterns(pathPatterns);
 	}
 
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("doc.html").addResourceLocations("classpath:/META-INF/resources/");
+		registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+	}
 }

@@ -6,7 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-@MapperScan(value = "com.klaxon.kserver.mapper")
+@MapperScan({
+	"com.klaxon.kserver.module.webpage.mapper",
+	"com.klaxon.kserver.module.account.mapper"
+})
 @EnableWebMvc
 @EnableScheduling
 @SpringBootApplication

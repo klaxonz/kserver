@@ -2,19 +2,19 @@ version: "3"
 
 services:
   ksever:
-    image: kserver:0.0.1
+    image: com.klaxon/kserver:0.0.1-snapshot
     container_name: kserver
     ports:
-      - "9001:9001"
+      - "9090:9090"
     environment:
-      - DB_HOST=192.168.31.153
-      - DB_PORT=20002
+      - DB_HOST=192.168.31.200
+      - DB_PORT=20000
       - DB_USERNAME=root
-      - DB_PASSWORD=kserver
+      - DB_PASSWORD=123456
       - DB_NAME=kserver
-      - REDIS_HOST=192.168.31.153
-      - REDIS_PORT=20001
+      - REDIS_HOST=192.168.31.200
+      - REDIS_PORT=20011
       - REDIS_PASSWORD=sOmE_sEcUrE_pAsS
     volumes:
-      - /mnt/d/Temp/yt-dlp:/app/download
+      - /home/klaxon/Downloads:/app/download
     restart: always

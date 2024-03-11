@@ -1,28 +1,17 @@
 package com.klaxon.kserver.bean;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class PageParam {
 
 	@TableField(exist = false)
-	private int page;
+	private final int page = 1;
 
 	@TableField(exist = false)
-	private int pageSize;
+	private final int pageSize = 10;
 
-	public int getPage() {
-		return page;
-	}
-
-	public void setPage(int page) {
-		this.page = page;
-	}
-
-	public int getPageSize() {
-		return pageSize;
-	}
-
-	public void setPageSize(int pageSize) {
-		this.pageSize = pageSize;
-	}
 }

@@ -1,7 +1,7 @@
 package com.klaxon.kserver.util;
 
 import com.klaxon.kserver.bean.OnlineUser;
-import com.klaxon.kserver.mapper.model.WebPage;
+import com.klaxon.kserver.module.webpage.model.entity.WebPage;
 
 public class ThreadLocalHolder {
 

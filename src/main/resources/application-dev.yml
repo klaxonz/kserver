@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 9091
   tomcat:
     uri-encoding: UTF-8
   servlet:
@@ -13,31 +13,30 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.31.200:20000/kserver?serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/kserver?serverTimezone=UTC
     username: root
-    password: 123456
+    password: kserver
     dbcp2:
       max-idle: 20
       min-idle: 10
       initial-size: 10
       max-wait-millis: 10000
+  flyway:
+    enabled: true
+    clean-disabled: true
+    out-of-order: false
+    encoding: UTF-8
+    locations: classpath:db/migration
+    validate-on-migrate: true
   cache:
     type: CAFFEINE
     caffeine:
       spec: maximumSize=500,expireAfterAccess=600s
   redis:
-    host: 192.168.31.200
-    port: 20011
+    host: localhost
+    port: 6379
   session:
     store-type: redis
-  devtools:
-    restart:
-      enabled: true
-  servlet:
-    multipart:
-      max-file-size: -1
-      max-request-size: -1
-
 
 mybatis-plus:
   global-config:
@@ -47,17 +46,8 @@ mybatis-plus:
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-ffmpeg:
-  path: D:\Program\Scoop\apps\ffmpeg\5.1.2\bin\ffmpeg.exe
-
-yt-dlp:
-  destination: D:\Temp\yt-dlp\
-  cookies-from-browser: vivaldi
-  cookies-path: D:\Temp\test\www.bilibili.com_cookies.txt
-video:
-  store-path: D:\Temp\yt-dlp
-
-app:
-  protocol: http
-  host: 127.0.0.1
-  port: 9001
+knife4j:
+  enable: true
+  openapi:
+    version: v4.0
+    license: Apache 2.0
