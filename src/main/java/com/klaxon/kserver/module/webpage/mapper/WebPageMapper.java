@@ -1,10 +1,18 @@
 package com.klaxon.kserver.module.webpage.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.klaxon.kserver.module.webpage.model.entity.WebPage;
-import org.springframework.stereotype.Repository;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
-@Repository
+/**
+ * <p>
+ * 网页表 Mapper 接口
+ * </p>
+ *
+ * @author klaxonz
+ * @since 2024-03-23
+ */
+@Mapper
 public interface WebPageMapper extends BaseMapper<WebPage> {
 
 }

@@ -1,10 +1,18 @@
 package com.klaxon.kserver.module.account.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.klaxon.kserver.module.account.model.entity.Account;
-import org.springframework.stereotype.Repository;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
-@Repository
+/**
+ * <p>
+ * 账号表 Mapper 接口
+ * </p>
+ *
+ * @author klaxonz
+ * @since 2024-03-23
+ */
+@Mapper
 public interface AccountMapper extends BaseMapper<Account> {
 
 }

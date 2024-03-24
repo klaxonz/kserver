@@ -2,28 +2,45 @@ package com.klaxon.kserver.module.media.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import com.klaxon.kserver.bean.PageInfo;
 import com.klaxon.kserver.exception.BizCodeEnum;
 import com.klaxon.kserver.exception.BizException;
+import com.klaxon.kserver.module.media.mapper.MediaLibraryDirectoryMapper;
 import com.klaxon.kserver.module.media.mapper.MediaLibraryMapper;
 import com.klaxon.kserver.module.media.model.entity.MediaLibrary;
+import com.klaxon.kserver.module.media.model.entity.MediaLibraryDirectory;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryAddReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryDeleteReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryListReq;
+import com.klaxon.kserver.module.media.model.req.MediaLibraryMountReq;
+import com.klaxon.kserver.module.media.model.req.MediaLibrarySyncReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryUpdateReq;
 import com.klaxon.kserver.module.media.model.rsp.MediaLibraryPageRsp;
+import com.klaxon.kserver.module.media.service.AlistService;
 import com.klaxon.kserver.module.media.service.MediaLibraryService;
-import lombok.AllArgsConstructor;
+import com.klaxon.kserver.module.media.task.MediaMetaAsyncTask;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-@AllArgsConstructor
 public class MediaLibraryServiceImpl implements MediaLibraryService {
 
-    private final MediaLibraryMapper mediaLibraryMapper;
+    @Resource
+    private MediaLibraryMapper mediaLibraryMapper;
+    @Resource
+    private MediaLibraryDirectoryMapper mediaLibraryDirectoryMapper;
+    @Resource
+    private MediaMetaAsyncTask mediaMetaAsyncTask;
+    @Resource
+    private AlistService alistService;
 
     @Override
     public void add(MediaLibraryAddReq req) {
@@ -43,7 +60,7 @@ public class MediaLibraryServiceImpl implements MediaLibraryService {
         queryWrapper.eq(MediaLibrary::getName, name);
         MediaLibrary mediaLibrary = mediaLibraryMapper.selectOne(queryWrapper);
         if (Objects.nonNull(mediaLibrary)) {
-            throw new BizException(BizCodeEnum.RESOURCE_EXIST, "媒体库名称已存在");
+            throw new BizException(BizCodeEnum.RESOURCE_EXIST, "媒体库名称重复");
         }
     }
 
@@ -81,4 +98,62 @@ public class MediaLibraryServiceImpl implements MediaLibraryService {
 
         return new PageInfo<>(page.getCurrent(), page.getSize(), page.getTotal(), page.getPages(), mediaLibraryList);
     }
+
+    @Override
+    public void mount(MediaLibraryMountReq req) {
+        checkMediaLibraryByIdExistOrFail(req.getLibraryId());
+        List<String> paths = req.getPaths();
+        List<MediaLibraryDirectory> directories = mediaLibraryDirectoryMapper.selectList(
+                new LambdaQueryWrapper<MediaLibraryDirectory>()
+                        .eq(MediaLibraryDirectory::getLibraryId, req.getLibraryId()));
+        Set<String> libraryPaths = directories.stream()
+                .map(MediaLibraryDirectory::getPath).collect(Collectors.toSet());
+        paths.forEach(path -> {
+            if (!libraryPaths.contains(path)) {
+                MediaLibraryDirectory mediaLibraryDirectory = new MediaLibraryDirectory();
+                mediaLibraryDirectory.setLibraryId(req.getLibraryId());
+                mediaLibraryDirectory.setPath(path);
+                mediaLibraryDirectoryMapper.insert(mediaLibraryDirectory);
+            }
+        });
+    }
+
+    private void checkMediaLibraryByIdExistOrFail(Long libraryId) {
+        MediaLibrary mediaLibrary = mediaLibraryMapper.selectById(libraryId);
+        if (Objects.isNull(mediaLibrary)) {
+            throw new BizException(BizCodeEnum.RESOURCE_NOT_EXIST, "媒体库不存在");
+        }
+    }
+
+    @Override
+    public void sync(MediaLibrarySyncReq req) {
+        log.info("Start to sync media library");
+
+        List<Long> libraryIds = req.getLibraryIds();
+        List<MediaLibrary> mediaLibraries = mediaLibraryMapper.selectList(
+                new LambdaQueryWrapper<MediaLibrary>().in(MediaLibrary::getId, libraryIds));
+        if (mediaLibraries.size() != libraryIds.size()) {
+            throw new BizException(BizCodeEnum.RESOURCE_NOT_EXIST, "媒体库不存在");
+        }
+
+        for (MediaLibrary mediaLibrary : mediaLibraries) {
+            // 查询挂载目录
+            List<MediaLibraryDirectory> mediaLibraryDirectories = mediaLibraryDirectoryMapper.selectList(
+                    new LambdaQueryWrapper<MediaLibraryDirectory>()
+                            .eq(MediaLibraryDirectory::getLibraryId, mediaLibrary.getId()));
+
+            List<String> filePaths = Lists.newArrayList();
+            for (MediaLibraryDirectory mediaLibraryDirectory : mediaLibraryDirectories) {
+                String path = mediaLibraryDirectory.getPath();
+                alistService.getFileList(mediaLibrary, path, filePaths);
+            }
+
+            for (String filePath : filePaths) {
+                mediaMetaAsyncTask.doTask(filePath, mediaLibrary);
+            }
+        }
+
+        log.info("Finnish to sync media library");
+    }
+
 }

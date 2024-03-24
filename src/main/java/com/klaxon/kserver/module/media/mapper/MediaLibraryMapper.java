@@ -1,7 +1,7 @@
 package com.klaxon.kserver.module.media.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.klaxon.kserver.module.media.model.entity.MediaLibrary;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author klaxonz
- * @since 2024-03-10
+ * @since 2024-03-23
  */
 @Mapper
 public interface MediaLibraryMapper extends BaseMapper<MediaLibrary> {

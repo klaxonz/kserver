@@ -2,17 +2,23 @@ package com.klaxon.kserver;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @MapperScan({
-	"com.klaxon.kserver.module.webpage.mapper",
-	"com.klaxon.kserver.module.account.mapper"
+	"com.klaxon.kserver.module.**.mapper",
 })
+@EnableRetry
+@EnableAsync
 @EnableWebMvc
 @EnableScheduling
 @SpringBootApplication
+@EnableConfigurationProperties
 public class KServerApplication {
 
 	public static void main(String[] args) {

@@ -36,11 +36,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		List<String> pathPatterns = new ArrayList<>();
-		pathPatterns.add("/doc.html");
-		pathPatterns.add("doc.html");
-		pathPatterns.add("/webjars/**");
-		pathPatterns.add("/swagger-resources");
-		pathPatterns.add("/error");
+		pathPatterns.add("/**");
+		// pathPatterns.add("/doc.html");
+		// pathPatterns.add("doc.html");
+		// pathPatterns.add("/webjars/**");
+		// pathPatterns.add("/swagger-resources");
+		// pathPatterns.add("/error");
 		registry.addInterceptor(getInterceptor()).excludePathPatterns(pathPatterns);
 	}
 

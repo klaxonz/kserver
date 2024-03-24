@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.generator.config.rules.DateType;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 import com.baomidou.mybatisplus.generator.fill.Column;
 import com.baomidou.mybatisplus.generator.fill.Property;
+import com.baomidou.mybatisplus.generator.type.ITypeConvertHandler;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,6 +21,10 @@ import java.util.Map;
 public class CodeGenerator {
 
     public static void generate(String moduleName, String tableName) throws IOException {
+        generate(moduleName, tableName, null);
+    }
+
+    public static void generate(String moduleName, String tableName, ITypeConvertHandler typeConvertHandler) throws IOException {
 
         String modulePackage = "com.klaxon.kserver.module." + moduleName;
         String entityPackage = "model.entity";
@@ -27,12 +33,12 @@ public class CodeGenerator {
         String author = getGitUsername();
 
         // 数据源配置
-        FastAutoGenerator.create(buildDataSource())
+        FastAutoGenerator.create(buildDataSource(typeConvertHandler))
                 .globalConfig(builder -> {
                     builder.author(author)// 设置作者
                             .disableOpenDir()       // 禁止打开输出目录 默认值:true
                             .commentDate("yyyy-MM-dd") // 注释日期
-                            .dateType(DateType.ONLY_DATE)   // 定义生成的实体类中日期类型 DateType.ONLY_DATE 默认值: DateType.TIME_PACK
+                            .dateType(DateType.TIME_PACK)   // 定义生成的实体类中日期类型 DateType.ONLY_DATE 默认值: DateType.TIME_PACK
                             .outputDir(System.getProperty("user.dir") + "/src/main/java"); // 指定输出目录
                 })
 
@@ -47,11 +53,15 @@ public class CodeGenerator {
                             .entityBuilder()// 实体类策略配置
                             .idType(IdType.ASSIGN_ID)// 主键策略  雪花算法自动生成的id
                             .addTableFills(new Column("create_time", FieldFill.INSERT)) // 自动填充配置
-                            .addTableFills(new Property("update_time", FieldFill.INSERT_UPDATE))
+                            .addTableFills(new Column("update_time", FieldFill.INSERT_UPDATE))
                             .logicDeleteColumnName("deleted")// 说明逻辑删除是哪个字段
                             .enableFileOverride()
                             .enableLombok()
-                            .enableTableFieldAnnotation();// 属性加上注解说明
+                            .enableTableFieldAnnotation() // 属性加上注解说明
+                            .mapperBuilder()
+                            .mapperAnnotation(Mapper.class)
+                            .enableFileOverride()
+                            .build();
                 })
 
                 // 只生成 entity
@@ -66,11 +76,10 @@ public class CodeGenerator {
                 // 使用Freemarker引擎模板，默认的是Velocity引擎模板
                 .templateEngine(new FreemarkerTemplateEngine())
                 .execute();
-
     }
 
-    private static DataSourceConfig.Builder buildDataSource() throws FileNotFoundException {
-        String profile = System.getProperty("user.dir") + "/src/main/resources/application-dev.yml";
+    private static DataSourceConfig.Builder buildDataSource(ITypeConvertHandler typeConvertHandler) throws FileNotFoundException {
+        String profile = System.getProperty("user.dir") + "/src/main/resources/application.yml";
         Map<String, Object> yamlData = YamlConfigReader.readYaml(profile);
         Map<String, Object> datasource = (Map<String, Object>) ((Map<String, Object>) yamlData.get("spring")).get("datasource");
 
@@ -78,7 +87,7 @@ public class CodeGenerator {
         String username = (String) datasource.get("username");
         String password = (String) datasource.get("password");
 
-        return new DataSourceConfig.Builder(url, username, password);
+        return new DataSourceConfig.Builder(url, username, password).typeConvertHandler(typeConvertHandler);
     }
 
     private static String getGitUsername() throws IOException {
