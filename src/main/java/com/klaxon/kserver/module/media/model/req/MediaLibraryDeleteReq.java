@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class MediaLibraryDeleteReq {
 
-    @NotNull(message = "libraryId不能为空")
-    private Long libraryId;
+    @NotNull(message = "id不能为空")
+    private Long id;
 
 }

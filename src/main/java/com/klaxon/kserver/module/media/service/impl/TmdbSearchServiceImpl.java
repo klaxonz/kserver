@@ -2,15 +2,18 @@ package com.klaxon.kserver.module.media.service.impl;
 
 import com.klaxon.kserver.module.media.service.TmdbSearchService;
 import com.uwetrottmann.tmdb2.Tmdb;
+import com.uwetrottmann.tmdb2.entities.AppendToResponse;
 import com.uwetrottmann.tmdb2.entities.Credit;
 import com.uwetrottmann.tmdb2.entities.Credits;
 import com.uwetrottmann.tmdb2.entities.Images;
+import com.uwetrottmann.tmdb2.entities.Movie;
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
 import com.uwetrottmann.tmdb2.entities.Person;
 import com.uwetrottmann.tmdb2.entities.TvEpisode;
 import com.uwetrottmann.tmdb2.entities.TvSeason;
 import com.uwetrottmann.tmdb2.entities.TvShow;
 import com.uwetrottmann.tmdb2.entities.TvShowResultsPage;
+import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem;
 import com.uwetrottmann.tmdb2.services.SearchService;
 import com.uwetrottmann.tmdb2.services.TvService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +34,17 @@ public class TmdbSearchServiceImpl implements TmdbSearchService {
 
     @Override
     @Retryable(value = Exception.class, recover = "recover" ,backoff = @Backoff)
-    public Response<MovieResultsPage> searchMovie(String name) throws Exception {
+    public Response<MovieResultsPage> searchMovie(String name, Integer page) throws Exception {
         SearchService searchService = tmdb.searchService();
         return searchService
-                .movie(name, null, "zh", null, null, null, null)
+                .movie(name, page, "zh", null, null, null, null)
                 .execute();
+    }
+
+    @Override
+    @Retryable(value = Exception.class, recover = "recover" ,backoff = @Backoff)
+    public Response<Movie> searchMovieSummary(Integer movieId) throws Exception {
+        return tmdb.moviesService().summary(movieId, "zh", new AppendToResponse(AppendToResponseItem.values())).execute();
     }
 
     @Override

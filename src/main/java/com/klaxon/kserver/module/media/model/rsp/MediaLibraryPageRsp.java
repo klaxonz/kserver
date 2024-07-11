@@ -8,12 +8,10 @@ import lombok.Setter;
 @Setter
 public class MediaLibraryPageRsp {
 
-    private Long libraryId;
-
+    private Long id;
     private String name;
-
-    private String host;
-
+    private String url;
     private String username;
+    private String password;
 
 }

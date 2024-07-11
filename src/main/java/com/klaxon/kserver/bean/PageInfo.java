@@ -25,8 +25,8 @@ public class PageInfo<T> implements Serializable {
     private Long total;
     //总页数
     @ApiModelProperty(notes = "总页数", required = true)
-    private Long totalPages;
+    private Long pages;
     //当前页记录
     @ApiModelProperty(notes = "响应的数据结果集", required = false)
-    private List<T> list;
+    private List<T> items;
 }

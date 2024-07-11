@@ -9,9 +9,9 @@ import lombok.Setter;
 public class PageParam {
 
 	@TableField(exist = false)
-	private final int page = 1;
+	private int page = 1;
 
 	@TableField(exist = false)
-	private final int pageSize = 10;
+	private int pageSize = 10;
 
 }

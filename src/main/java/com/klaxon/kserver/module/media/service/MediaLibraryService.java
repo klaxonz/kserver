@@ -7,6 +7,7 @@ import com.klaxon.kserver.module.media.model.req.MediaLibraryListReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryMountReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibrarySyncReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryUpdateReq;
+import com.klaxon.kserver.module.media.model.rsp.MediaLibraryDetailRsp;
 import com.klaxon.kserver.module.media.model.rsp.MediaLibraryPageRsp;
 
 public interface MediaLibraryService {
@@ -16,6 +17,8 @@ public interface MediaLibraryService {
     void delete(MediaLibraryDeleteReq req);
 
     void update(MediaLibraryUpdateReq req);
+
+    MediaLibraryDetailRsp detail(Long id);
 
     PageInfo<MediaLibraryPageRsp> list(MediaLibraryListReq req);
 

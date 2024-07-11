@@ -8,26 +8,26 @@ import java.util.Date;
 public class Response<T> {
 
 	private String code;
-	private String desc;
+	private String message;
 	private Date timestamp = new Date();
-	private T data;
+	private T result;
 
 	private Response() {
 	}
 
-	private Response(final String code, final String desc) {
+	private Response(final String code, final String message) {
 		this.code = code;
-		this.desc = desc;
+		this.message = message;
 	}
 
 	private Response(final BizCodeEnum bizCodeEnum) {
 		this.code = bizCodeEnum.getCode();
-		this.desc = bizCodeEnum.getDesc();
+		this.message = bizCodeEnum.getDesc();
 	}
 
-	private Response(final BizCodeEnum bizCodeEnum, final T data) {
+	private Response(final BizCodeEnum bizCodeEnum, final T result) {
 		this(bizCodeEnum);
-		this.data = data;
+		this.result = result;
 	}
 
 	public static <R> Response<R> success() {
@@ -66,12 +66,20 @@ public class Response<T> {
 		this.code = code;
 	}
 
-	public String getDesc() {
-		return desc;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setDesc(String desc) {
-		this.desc = desc;
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public T getResult() {
+		return result;
+	}
+
+	public void setResult(T result) {
+		this.result = result;
 	}
 
 	public Date getTimestamp() {
@@ -82,11 +90,5 @@ public class Response<T> {
 		this.timestamp = timestamp;
 	}
 
-	public T getData() {
-		return data;
-	}
 
-	public void setData(T data) {
-		this.data = data;
-	}
 }

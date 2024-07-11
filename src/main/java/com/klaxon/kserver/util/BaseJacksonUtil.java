@@ -1,5 +1,6 @@
 package com.klaxon.kserver.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -52,7 +53,9 @@ public class BaseJacksonUtil {
 					// 设置 java.util.Date, Calendar 序列化、反序列化的格式
 					.dateFormat(new SimpleDateFormat(DEFAULT_DATETIME_PATTERN))
 					// 设置 java.util.Date, Calendar 序列化、反序列化的时区
-					.timeZone(TimeZone.getTimeZone("GMT+8"));
+					.timeZone(TimeZone.getTimeZone("GMT+8"))
+					// 设置字段为 null 时，不序列化
+					.serializationInclusion(JsonInclude.Include.NON_NULL);
 
 			// Jackson 序列化 long类型为String，解决后端返回的Long类型在前端精度丢失的问题
 			builder.serializerByType(BigInteger.class, ToStringSerializer.instance);

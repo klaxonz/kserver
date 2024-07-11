@@ -8,13 +8,16 @@ import com.klaxon.kserver.module.media.model.req.MediaLibraryListReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryMountReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibrarySyncReq;
 import com.klaxon.kserver.module.media.model.req.MediaLibraryUpdateReq;
+import com.klaxon.kserver.module.media.model.rsp.MediaLibraryDetailRsp;
 import com.klaxon.kserver.module.media.model.rsp.MediaLibraryPageRsp;
 import com.klaxon.kserver.module.media.service.MediaLibraryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -22,7 +25,7 @@ import javax.validation.Valid;
 
 @Api(tags = "媒体库")
 @RestController
-@RequestMapping("/media-library")
+@RequestMapping("/api/media-library")
 public class MediaLibraryController {
 
     @Resource
@@ -49,9 +52,15 @@ public class MediaLibraryController {
         return Response.success();
     }
 
-    @PostMapping("/list")
+    @GetMapping("/detail")
+    @ApiOperation(value = "查询媒体库详情")
+    public Response<MediaLibraryDetailRsp> detail(@RequestParam(name = "id") Long id) {
+        return Response.success(mediaLibraryService.detail(id));
+    }
+
+    @GetMapping("/list")
     @ApiOperation(value = "查询媒体库")
-    public Response<PageInfo<MediaLibraryPageRsp>> list(@Valid @RequestBody MediaLibraryListReq req) {
+    public Response<PageInfo<MediaLibraryPageRsp>> list(MediaLibraryListReq req) {
         return Response.success(mediaLibraryService.list(req));
     }
 

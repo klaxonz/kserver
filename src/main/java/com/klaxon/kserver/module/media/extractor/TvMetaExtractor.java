@@ -1,25 +1,19 @@
 package com.klaxon.kserver.module.media.extractor;
 
+import com.baomidou.mybatisplus.core.conditions.interfaces.Compare;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.klaxon.kserver.module.media.mapper.ActorImageMapper;
-import com.klaxon.kserver.module.media.mapper.ActorMapper;
-import com.klaxon.kserver.module.media.mapper.ImageMapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.klaxon.kserver.module.media.mapper.TvSeriesActorMapper;
 import com.klaxon.kserver.module.media.mapper.TvSeriesEpisodeImageMapper;
 import com.klaxon.kserver.module.media.mapper.TvSeriesEpisodeMapper;
 import com.klaxon.kserver.module.media.mapper.TvSeriesMapper;
 import com.klaxon.kserver.module.media.mapper.TvSeriesSeasonImageMapper;
 import com.klaxon.kserver.module.media.mapper.TvSeriesSeasonMapper;
-import com.klaxon.kserver.module.media.model.entity.Actor;
-import com.klaxon.kserver.module.media.model.entity.ActorImage;
-import com.klaxon.kserver.module.media.model.entity.Image;
 import com.klaxon.kserver.module.media.model.entity.MediaLibrary;
 import com.klaxon.kserver.module.media.model.entity.TvSeries;
 import com.klaxon.kserver.module.media.model.entity.TvSeriesActor;
 import com.klaxon.kserver.module.media.model.entity.TvSeriesEpisode;
-import com.klaxon.kserver.module.media.model.entity.TvSeriesEpisodeImage;
 import com.klaxon.kserver.module.media.model.entity.TvSeriesSeason;
-import com.klaxon.kserver.module.media.model.entity.TvSeriesSeasonImage;
 import com.klaxon.kserver.module.media.service.TmdbSearchService;
 import com.uwetrottmann.tmdb2.entities.BasePerson;
 import com.uwetrottmann.tmdb2.entities.BaseTvShow;
@@ -47,23 +41,13 @@ import java.util.Objects;
 public class TvMetaExtractor extends MediaMetaExtractor {
 
     @Resource
-    private ImageMapper imageMapper;
-    @Resource
-    private ActorMapper actorMapper;
-    @Resource
     private TvSeriesMapper tvSeriesMapper;
-    @Resource
-    private ActorImageMapper actorImageMapper;
     @Resource
     private TvSeriesActorMapper tvSeriesActorMapper;
     @Resource
     private TvSeriesSeasonMapper tvSeriesSeasonMapper;
     @Resource
     private TvSeriesEpisodeMapper tvSeriesEpisodeMapper;
-    @Resource
-    private TvSeriesSeasonImageMapper tvSeriesSeasonImageMapper;
-    @Resource
-    private TvSeriesEpisodeImageMapper tvSeriesEpisodeImageMapper;
     @Resource
     private TmdbSearchService tmdbSearchService;
 
@@ -162,16 +146,6 @@ public class TvMetaExtractor extends MediaMetaExtractor {
             }
 
             // save actor base info
-            Actor actor = actorMapper.selectOne(new LambdaQueryWrapper<Actor>().eq(Actor::getName, castMember.name));
-            if (Objects.isNull(actor)) {
-                actor = new Actor();
-                actor.setName(castMember.name);
-                actor.setGender(person.gender);
-                if (Objects.nonNull(person.birthday)) {
-                    actor.setBirthdate(person.birthday.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                }
-                actorMapper.insert(actor);
-            }
 
             // save actor and movie relation
             TvSeriesActor tvSeriesActor = tvSeriesActorMapper.selectOne(new LambdaQueryWrapper<TvSeriesActor>()
@@ -182,7 +156,7 @@ public class TvMetaExtractor extends MediaMetaExtractor {
                 tvSeriesActor = new TvSeriesActor();
                 tvSeriesActor.setTvSeriesId(tvSeries.getId());
                 tvSeriesActor.setTvSeriesSeasonId(tvSeriesSeason.getId());
-                tvSeriesActor.setActorId(actor.getId());
+                tvSeriesActor.setActorId(0L);
                 tvSeriesActor.setActorCharacter(castMember.character);
                 tvSeriesActorMapper.insert(tvSeriesActor);
             }
@@ -194,29 +168,8 @@ public class TvMetaExtractor extends MediaMetaExtractor {
             }
 
             // save image
-            Image image = imageMapper.selectOne(new LambdaQueryWrapper<Image>()
-                    .eq(Image::getUrl, castMember.profile_path)
-                    .eq(Image::getSource, 1));
 
-            if (Objects.isNull(image)) {
-                image = new Image();
-                image.setUrl(castMember.profile_path);
-                image.setType(3);
-                image.setSource(1);
-                imageMapper.insert(image);
-            }
 
-            // save actor image relation
-            ActorImage actorImage = actorImageMapper.selectOne(new LambdaQueryWrapper<ActorImage>()
-                    .eq(ActorImage::getActorId, actor.getId())
-                    .eq(ActorImage::getImageId, image.getId()));
-
-            if (Objects.isNull(actorImage)) {
-                actorImage = new ActorImage();
-                actorImage.setActorId(actor.getId());
-                actorImage.setImageId(image.getId());
-                actorImageMapper.insert(actorImage);
-            }
         }
 
         // build tv series episode
@@ -262,26 +215,9 @@ public class TvMetaExtractor extends MediaMetaExtractor {
     private void saveTvSeriesSeasonImages(TvSeriesSeason tvSeriesSeason, List<com.uwetrottmann.tmdb2.entities.Image> backdrops, Integer type) {
         if (Objects.nonNull(backdrops) && !backdrops.isEmpty()) {
             for (com.uwetrottmann.tmdb2.entities.Image backdrop : backdrops) {
-                Image image = imageMapper.selectOne(new LambdaQueryWrapper<Image>()
-                        .eq(Image::getUrl, backdrop.file_path)
-                        .eq(Image::getType, type)
-                        .eq(Image::getSource, 1));
 
-                if (Objects.isNull(image)) {
-                    image = new Image();
-                    image.setUrl(backdrop.file_path);
-                    // 背景图
-                    image.setType(type);
-                    image.setSource(1);
-                    imageMapper.insert(image);
 
-                    TvSeriesSeasonImage tvSeriesSeasonImage = new TvSeriesSeasonImage();
-                    tvSeriesSeasonImage.setTvSeriesId(tvSeriesSeason.getTvSeriesId());
-                    tvSeriesSeasonImage.setTvSeriesSeasonId(tvSeriesSeason.getId());
-                    tvSeriesSeasonImage.setImageType(type);
-                    tvSeriesSeasonImage.setImageId(image.getId());
-                    tvSeriesSeasonImageMapper.insert(tvSeriesSeasonImage);
-                }
+
             }
         }
     }
@@ -289,27 +225,8 @@ public class TvMetaExtractor extends MediaMetaExtractor {
     private void saveTvSeriesEpisodeImages(TvSeriesEpisode tvSeriesEpisode, List<com.uwetrottmann.tmdb2.entities.Image> backdrops, Integer type) {
         if (Objects.nonNull(backdrops) && !backdrops.isEmpty()) {
             for (com.uwetrottmann.tmdb2.entities.Image backdrop : backdrops) {
-                Image image = imageMapper.selectOne(new LambdaQueryWrapper<Image>()
-                        .eq(Image::getUrl, backdrop.file_path)
-                        .eq(Image::getType, type)
-                        .eq(Image::getSource, 1));
 
-                if (Objects.isNull(image)) {
-                    image = new Image();
-                    image.setUrl(backdrop.file_path);
-                    // 背景图
-                    image.setType(type);
-                    image.setSource(1);
-                    imageMapper.insert(image);
 
-                    TvSeriesEpisodeImage tvSeriesEpisodeImage = new TvSeriesEpisodeImage();
-                    tvSeriesEpisodeImage.setTvSeriesId(tvSeriesEpisode.getId());
-                    tvSeriesEpisodeImage.setTvSeriesSeasonId(tvSeriesEpisode.getTvSeriesSeasonId());
-                    tvSeriesEpisodeImage.setTvSeriesEpisodeId(tvSeriesEpisode.getId());
-                    tvSeriesEpisodeImage.setImageType(type);
-                    tvSeriesEpisodeImage.setImageId(image.getId());
-                    tvSeriesEpisodeImageMapper.insert(tvSeriesEpisodeImage);
-                }
             }
         }
     }
@@ -342,9 +259,9 @@ public class TvMetaExtractor extends MediaMetaExtractor {
     }
 
     private TvSeriesSeason buildTvSeriesSeason(MediaLibrary mediaLibrary, TvSeries tvSeries, TvSeason tvSeason) {
-        TvSeriesSeason tvSeriesSeason = tvSeriesSeasonMapper.selectOne(new LambdaQueryWrapper<TvSeriesSeason>()
-                .eq(TvSeriesSeason::getLibraryId, mediaLibrary.getId())
-                .eq(TvSeriesSeason::getTvSeriesId, tvSeries.getId()));
+        Compare<LambdaQueryWrapper<TvSeriesSeason>, SFunction<TvSeriesSeason, ?>> lambdaQueryWrapperSFunctionCompare = new LambdaQueryWrapper<TvSeriesSeason>()
+                .eq(TvSeriesSeason::getLibraryId, mediaLibrary.getId());
+        TvSeriesSeason tvSeriesSeason = tvSeriesSeasonMapper.selectOne(lambdaQueryWrapperSFunctionCompare.eq(true, (SFunction<TvSeriesSeason, ?>) TvSeriesSeason::getTvSeriesId, tvSeries.getId()));
 
         if (Objects.isNull(tvSeriesSeason)) {
             tvSeriesSeason = new TvSeriesSeason();
@@ -364,8 +281,9 @@ public class TvMetaExtractor extends MediaMetaExtractor {
     }
 
     private TvSeries buildTvSeries(MediaLibrary mediaLibrary, TvShow tvShow) {
-        TvSeries tvSeries = tvSeriesMapper.selectOne(new LambdaQueryWrapper<TvSeries>()
-                .eq(TvSeries::getLibraryId, mediaLibrary.getId()).eq(TvSeries::getTmdbId, tvShow.id));
+        Compare<LambdaQueryWrapper<TvSeries>, SFunction<TvSeries, ?>> lambdaQueryWrapperSFunctionCompare = new LambdaQueryWrapper<TvSeries>();
+        Compare<LambdaQueryWrapper<TvSeries>, SFunction<TvSeries, ?>> lambdaQueryWrapperSFunctionCompare1 = lambdaQueryWrapperSFunctionCompare.eq(true, (SFunction<TvSeries, ?>) TvSeries::getLibraryId, mediaLibrary.getId());
+        TvSeries tvSeries = tvSeriesMapper.selectOne(lambdaQueryWrapperSFunctionCompare1.eq(true, (SFunction<TvSeries, ?>) TvSeries::getTmdbId, tvShow.id));
 
         if (Objects.isNull(tvSeries)) {
             tvSeries = new TvSeries();

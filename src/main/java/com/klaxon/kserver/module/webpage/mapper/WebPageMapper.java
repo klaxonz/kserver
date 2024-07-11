@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author klaxonz
- * @since 2024-03-23
+ * @since 2024-04-25
  */
 @Mapper
 public interface WebPageMapper extends BaseMapper<WebPage> {

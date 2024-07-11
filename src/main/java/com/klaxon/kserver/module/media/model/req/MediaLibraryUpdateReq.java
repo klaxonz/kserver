@@ -5,14 +5,16 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
 public class MediaLibraryUpdateReq {
 
-    @NotNull(message = "libraryId不能为空")
-    private Long libraryId;
+    @NotNull(message = "id不能为空")
+    private Long id;
 
     @NotBlank(message = "媒体库地址不能为空")
     @URL(message = "媒体库地址格式错误")
@@ -26,5 +28,8 @@ public class MediaLibraryUpdateReq {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+
+    @NotEmpty(message = "目录不能为空")
+    private List<String> paths;
 
 }

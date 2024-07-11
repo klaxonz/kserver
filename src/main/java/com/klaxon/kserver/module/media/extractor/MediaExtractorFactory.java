@@ -11,6 +11,13 @@ public class MediaExtractorFactory {
         FileExtractInfo extractTv = findByType(extractInfos, FileExtractInfo.TYPE_TV);
         FileExtractInfo extractMovie = findByType(extractInfos, FileExtractInfo.TYPE_MOVIE);
 
+        // 纯数字不解析
+        if (Objects.nonNull(extractMovie)) {
+            if (StringUtils.isNumeric(extractMovie.getName())) {
+                return null;
+            }
+        }
+
         if (Objects.nonNull(extractMovie) && StringUtils.isNotBlank(extractMovie.getName()) && Objects.isNull(extractMovie.getSeason())) {
             return extractMovie;
         }

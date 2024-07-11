@@ -12,7 +12,9 @@ public class MediaMetaExtractorHandler {
     private List<MediaMetaExtractor> mediaMetaExtractors;
 
     public MediaMetaExtractor getMediaMetaExtractors(Integer type) {
-        return mediaMetaExtractors.stream().filter(mediaMetaExtractor -> mediaMetaExtractor.getType().equals(type)).findFirst().orElse(null);
-
+        return mediaMetaExtractors.stream()
+                .filter(mediaMetaExtractor -> mediaMetaExtractor.getType().equals(type))
+                .findFirst()
+                .orElse(null);
     }
 }

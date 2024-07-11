@@ -5,7 +5,9 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +25,8 @@ public class MediaLibraryAddReq {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+
+    @NotEmpty(message = "目录不能为空")
+    private List<String> paths;
 
 }

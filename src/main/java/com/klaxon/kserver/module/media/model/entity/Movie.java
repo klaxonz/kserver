@@ -18,7 +18,7 @@ import lombok.Setter;
  * </p>
  *
  * @author klaxonz
- * @since 2024-03-23
+ * @since 2024-04-25
  */
 @Getter
 @Setter
@@ -34,16 +34,10 @@ public class Movie implements Serializable {
     private Long id;
 
     /**
-     * 媒体库 id
+     * tmdb id
      */
-    @TableField("library_id")
-    private Long libraryId;
-
-    /**
-     * 路径
-     */
-    @TableField("path")
-    private String path;
+    @TableField("tmdb_id")
+    private Long tmdbId;
 
     /**
      * 标题
@@ -92,6 +86,12 @@ public class Movie implements Serializable {
      */
     @TableField("release_date")
     private LocalDate releaseDate;
+
+    /**
+     * 时长
+     */
+    @TableField("runtime")
+    private Integer runtime;
 
     /**
      * 删除时间，0 为未删除
